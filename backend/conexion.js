@@ -21,6 +21,10 @@ app.get('/config/health', async (req, res) => {
   }
 });
 
+app.post('/apis/login', async (req, res) => {
+    
+});
+
 
 // app.listen(5000, () => console.log('Servidor en puerto 5000'));
 // 🔊 Arrancar servidor
@@ -30,4 +34,5 @@ app.listen(PORT, () => {
   console.log(`🔗 Frontend: http://localhost:3000`);
   console.log(`🔗 Backend API: http://localhost:${PORT}/apis`);
   console.log(`❤️  Health Check: http://localhost:${PORT}/config`);
+  console.log(`❤️  Health Check: http://localhost:${PORT}/apis/login`);
 });
