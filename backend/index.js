@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
+const loginRoutes = require('./apis/Login');
 
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN || "http://localhost:3000",
@@ -17,4 +18,11 @@ app.get("/api/saludo", (req, res) => {
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Backend escuchando en http://localhost:${PORT}`);
+});
+
+// Módulo Login en la ruta /api/login
+app.use('/api/login', loginRoutes);
+
+app.listen(PORT, () => {
+  console.log(`Backend ArcoNorte corriendo en puerto ${PORT}`);
 });
