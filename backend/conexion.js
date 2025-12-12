@@ -1,20 +1,22 @@
 // 🔌 Importar módulo de base de datos
 const db = require('./config/database');
+const cors = require("cors");
+require("dotenv").config();
+const express = require("express");
+
 const loginRoutes = require('./apis/Login');
-const cors = require('cors');
-require('dotenv').config();
-const express = require('express');
+
+const app = express();
 
 // Middlewares
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN || 'http://localhost:3000',
+  origin: process.env.CLIENT_ORIGIN || "http://localhost:3000",
   credentials: true
 })
 );
+
 app.use(express.json());
 
-
-const app = express();
 app.get('/', (req, res) => {
   res.send('Backend funcionando!');
 });
@@ -35,7 +37,7 @@ app.post('/apis/login', async (req, res) => {
     
 });
 
-//Módulo Login en la ruta /apis/login
+
 app.use('/apis/login', loginRoutes);
 
 // app.listen(5000, () => console.log('Servidor en puerto 5000'));

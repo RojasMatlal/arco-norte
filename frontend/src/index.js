@@ -9,9 +9,11 @@ import reportWebVitals from './reportWebVitals';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
 
-   <BrowserRouter>
+  <React.StrictMode>
+  <BrowserRouter>
     <App />
   </BrowserRouter>
+  </React.StrictMode>
 
 );
 
