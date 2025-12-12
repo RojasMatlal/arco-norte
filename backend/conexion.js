@@ -1,4 +1,4 @@
-// 🔌 Importar módulo de base de datos
+// Importar módulo de base de datos
 const db = require('./config/database');
 const cors = require("cors");
 require("dotenv").config();
@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
   res.send('Backend funcionando!');
 });
 
-// 🩺 Endpoint de healthcheck para probar conexión a la BD
+// Endpoint de healthcheck para probar conexión a la BD
 app.get('/config/health', async (req, res) => {
   try {
     // db.query viene de module.exports en database.js
@@ -41,12 +41,12 @@ app.post('/apis/login', async (req, res) => {
 app.use('/apis/login', loginRoutes);
 
 // app.listen(5000, () => console.log('Servidor en puerto 5000'));
-// 🔊 Arrancar servidor
+//  Arrancar servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`✅ Servidor de ArcoNorte corriendo en puerto: ${PORT}`);
-  console.log(`🔗 Frontend: http://localhost:3000`);
-  console.log(`🔗 Backend API: http://localhost:${PORT}/apis`);
-  console.log(`❤️  Health Check: http://localhost:${PORT}/config`);
-  console.log(`❤️  Health Check: http://localhost:${PORT}/apis/login`);
+  console.log(` Servidor de ArcoNorte corriendo en puerto: ${PORT}`);
+  console.log(` Frontend: http://localhost:3000`);
+  console.log(` Backend API: http://localhost:${PORT}/apis`);
+  console.log(`  Health Check: http://localhost:${PORT}/config`);
+  console.log(`  Health Check: http://localhost:${PORT}/apis/login`);
 });

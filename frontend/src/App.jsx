@@ -1,10 +1,11 @@
-import './App.css';
+import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import Login from './View/login.jsx'; 
 
-function App() {
+ function App() {
   return (
-    <div className="App">
-      <Login />   
+    <div>
+      <Login />
     </div>
   );
 }
