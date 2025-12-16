@@ -1,5 +1,10 @@
 require('dotenv').config();
 const mysql = require('mysql2/promise');
+//const rolesRoutes = require('../apis/Roles');
+//const usersRoutes = require('../apis/Users');
+//
+app.use('/api/roles', rolesRoutes);
+//app.use('/api/users', usersRoutes);
 
 // Guardar la configuración para poder acceder después
 const dbConfig = {
@@ -24,32 +29,32 @@ async function testConnection() {
 
         // Hacer ping para verificar
         await connection.ping();
-        console.log('✅ Conexión a la BD OK');
-        console.log(`   Host: ${dbConfig.host}`);
-        console.log(`   Puerto: ${dbConfig.port}`);
-        console.log(`   Usuario: ${dbConfig.user}`);
-        console.log(`   Base de datos: ${dbConfig.database}`);
+        console.log(' Conexión a la BD OK');
+        console.log(` Host: ${dbConfig.host}`);
+        console.log(` Puerto: ${dbConfig.port}`);
+        console.log(` Usuario: ${dbConfig.user}`);
+        console.log(` Base de datos: ${dbConfig.database}`);
 
         // Obtener versión de MySQL
         const [result] = await connection.query('SELECT VERSION() as version');
-        console.log(`   Versión MySQL: ${result[0].version}`);
+        console.log(` Versión MySQL: ${result[0].version}`);
     } 
     catch (error) {
-        console.error('❌ Error al conectar a la BD:', err.message);
-        console.log('\n🔧 Posibles soluciones:');
+        console.error(' Error al conectar a la BD:', err.message);
+        console.log('\n Posibles soluciones:');
         console.log('1. Verifica que MySQL esté instalado y corriendo');
         console.log('2. Comandos para Windows con XAMPP:');
-        console.log('   - Abre XAMPP Control Panel');
-        console.log('   - Haz clic en "Start" en MySQL');
+        console.log(' - Abre XAMPP Control Panel');
+        console.log(' - Haz clic en "Start" en MySQL');
         console.log('3. Credenciales por defecto de XAMPP:');
-        console.log('   - Usuario: root');
-        console.log('   - Password: (vacío)');
+        console.log(' - Usuario: root');
+        console.log(' - Password: (vacío)');
         console.log('4. Crea el archivo .env con:');
-        console.log('   DB_HOST=localhost');
-        console.log('   DB_PORT=3306');
-        console.log('   DB_USER=root');
-        console.log('   DB_PASSWORD=');
-        console.log('   DB_NAME=arconorte');
+        console.log(' DB_HOST=localhost');
+        console.log(' DB_PORT=3306');
+        console.log(' DB_USER=root');
+        console.log(' DB_PASSWORD=');
+        console.log(' DB_NAME=arconorte');
     }
     finally {
         // Liberar la conexión de vuelta al pool
@@ -61,7 +66,7 @@ async function testConnection() {
 // testConnection();
 // Ejecutar la prueba
 testConnection().then(() => {
-  console.log('\n🔍 Prueba completada');
+  console.log('\n Prueba completada');
 });
 
 module.exports = {

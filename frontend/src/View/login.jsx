@@ -34,8 +34,10 @@ function Login() {
         // Redirección según rol (ajusta IDs a los de tu BD)
         setTimeout(() => {
         if (user.id_rol === 745) {
+          console.log('LOGIN RESULT:', result);
           navigate('/users');      // ruta panel administrador
         } else if (user.id_rol === 125) {
+          console.log('LOGIN RESULT:', result);
           navigate('/users');   // ruta panel operador
         } else {
           navigate('/');           // ruta por defecto
@@ -87,6 +89,7 @@ function Login() {
           name="email"
           value={form.email}
           onChange={handleChange}
+          placeholder="user"
           required
         />
         </div>

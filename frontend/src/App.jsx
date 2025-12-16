@@ -1,12 +1,17 @@
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './View/login.jsx'; 
+import Users from './View/users.jsx'; 
 
  function App() {
   return (
-    <div>
-      <Login />
-    </div>
+    <BrowserRouter>
+    <Routes>
+      <Route path="/login" element={<Login />}/>
+      <Route path="/users" element={<Users />}/>
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+    </BrowserRouter>
   );
 }
 

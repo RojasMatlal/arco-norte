@@ -3,19 +3,30 @@ const db = require('./config/database');
 const cors = require("cors");
 require("dotenv").config();
 const express = require("express");
-
-const loginRoutes = require('./apis/Login');
+const mysql = require('mysql2/promise');
 
 const app = express();
 
 // Middlewares
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN || "http://localhost:3000",
-  credentials: true
+  //credentials: true
 })
 );
 
 app.use(express.json());
+
+// Rutas
+const loginRoutes = require('./apis/Login');
+const rolesRoutes = require('./apis/Roles');
+const usersRoutes = require('./apis/Users');
+
+app.use('/api/login', loginRoutes);
+app.use('/api/roles', rolesRoutes);
+app.use('/api/users', usersRoutes);
+
+module.exports = app;
+
 
 app.get('/', (req, res) => {
   res.send('Backend funcionando!');
@@ -37,8 +48,6 @@ app.post('/apis/login', async (req, res) => {
     
 });
 
-
-app.use('/apis/login', loginRoutes);
 
 // app.listen(5000, () => console.log('Servidor en puerto 5000'));
 //  Arrancar servidor
