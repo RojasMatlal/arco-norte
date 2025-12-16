@@ -68,7 +68,7 @@ function Login() {
   return (
 
      <div className="login-page">
-      <div className="background-logo"></div>
+      <div className="background-logo" ></div>
       
     <div className="login-container">
        <form className="login-form" onSubmit={handleSubmit}>

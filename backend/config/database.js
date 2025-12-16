@@ -1,10 +1,5 @@
 require('dotenv').config();
 const mysql = require('mysql2/promise');
-//const rolesRoutes = require('../apis/Roles');
-//const usersRoutes = require('../apis/Users');
-//
-app.use('/api/roles', rolesRoutes);
-//app.use('/api/users', usersRoutes);
 
 // Guardar la configuración para poder acceder después
 const dbConfig = {
@@ -37,7 +32,7 @@ async function testConnection() {
 
         // Obtener versión de MySQL
         const [result] = await connection.query('SELECT VERSION() as version');
-        console.log(` Versión MySQL: ${result[0].version}`);
+        console.log(`  Versión MySQL: ${result[0].version}`);
     } 
     catch (error) {
         console.error(' Error al conectar a la BD:', err.message);
