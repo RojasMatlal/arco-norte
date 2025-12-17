@@ -7,10 +7,10 @@ export default function Users() {
   const navigate = useNavigate();
   const user = AuthService.getUser();//obtiene usuarios de AuthService
 
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
-if (!user) navigate('/login');
-  }, [navigate]);
+ useEffect(() => {
+  if (!user) navigate('/login', { replace: true });
+}, [user, navigate]);
+
 
   if (!user) {
     return (
