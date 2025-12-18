@@ -5,8 +5,8 @@ import './login.css';
 
 function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
-   const [msg, setMsg] = useState('');
-  const [msgType, setMsgType] = useState('');  //alertas
+  const [msg, setMsg] = useState('');
+  const [msgType, setMsgType] = useState('');
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -15,10 +15,23 @@ function Login() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const goByRole = (user) => {
+    const idRol = Number(user?.id_rol);
+    const rolNombre = String(user?.rol || '').toLowerCase();
+
+    const isAdmin = idRol === 745 || rolNombre === 'administrador';
+    const isOper = idRol === 125 || rolNombre === 'operador';
+
+    if (isAdmin) return navigate('/user_admin', { replace: true });
+    if (isOper) return navigate('/user_oper', { replace: true });
+
+    // fallback (si llega un rol distinto)
+    return navigate('/login', { replace: true });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-if (loading) return;
+    if (loading) return;
 
     setMsg('');
     setMsgType('');
@@ -27,14 +40,15 @@ if (loading) return;
     try {
       const result = await AuthService.login(form.email, form.password);
 
-     if (!result?.success) {
+      if (!result?.success) {
         setMsg(result?.message || 'Inicio de sesión incorrecto');
         setMsgType('error');
         return;
       }
 
-      // ✅ verifica que se guardó la sesión (AuthService lo guarda)
+      // ✅ AuthService ya guarda el usuario; lo leemos de ahí
       const savedUser = AuthService.getUser();
+
       if (!savedUser) {
         setMsg('Sesión no guardada. Reintenta el login.');
         setMsgType('error');
@@ -44,8 +58,8 @@ if (loading) return;
       setMsg(`Bienvenido ${savedUser.nombre} (${savedUser.rol})`);
       setMsgType('success');
 
-      // ✅ navega ya (sin setTimeout)
-      navigate('/users', { replace: true });
+      // ✅ redirección por rol
+      goByRole(savedUser);
 
     } catch (err) {
       console.error(err);
@@ -84,6 +98,7 @@ if (loading) return;
               onChange={handleChange}
               placeholder="user"
               required
+              disabled={loading}
             />
           </div>
 
@@ -96,6 +111,7 @@ if (loading) return;
               onChange={handleChange}
               placeholder="********"
               required
+              disabled={loading}
             />
           </div>
 

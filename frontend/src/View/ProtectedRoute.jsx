@@ -7,8 +7,11 @@ export default function ProtectedRoute({ allowedRoles = [], children }) {
   // No logueado
   if (!user) return <Navigate to="/login" replace />;
 
+  // Normaliza id_rol a número
+  const idRol = Number(user.id_rol);
+
   // Logueado pero sin rol permitido
-  if (allowedRoles.length > 0 && !allowedRoles.includes(user.id_rol)) {
+  if (allowedRoles.length > 0 && !allowedRoles.includes(idRol)) {
     return <Navigate to="/login" replace />;
   }
 
