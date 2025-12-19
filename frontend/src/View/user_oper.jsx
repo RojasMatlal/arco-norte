@@ -8,9 +8,10 @@ function User_Oper() {
   const user = AuthService.getUser();
 
   const [activeView, setActiveView] = useState('dashboard'); // dashboard | perfil | historial
-  const [profileImage, setProfileImage] = useState(
-    user?.imagen || user?.imagen_usuario || null
-  );
+  const [setProfileImage] = useState(
+  user?.imagen || user?.imagen_usuario || null
+);
+
   const [menuOpen, setMenuOpen] = useState(false);
 
   // (Opcional) perfil detallado si luego conectas endpoint real
@@ -37,10 +38,10 @@ function User_Oper() {
   }, [navigate]);
 
   // recargar imagen si cambia el user guardado
-  useEffect(() => {
-    const u = AuthService.getUser();
-    setProfileImage(u?.imagen || u?.imagen_usuario || null);
-  }, []);
+ useEffect(() => {
+  setProfileImage(user?.imagen || user?.imagen_usuario || null);
+}, [user]);
+
 
   // ======= PERFIL DESDE BD (placeholder listo) =======
   useEffect(() => {
@@ -106,7 +107,7 @@ function User_Oper() {
             <span>
               Bienvenido{' '}
               <strong>
-                {user.nombre} {user.apellidoPaterno}
+                {user.nombre} {user.apellidoPaterno || user.ap_paterno || ''}
               </strong>
             </span>
 
@@ -116,8 +117,8 @@ function User_Oper() {
                 className="header-avatar-button"
                 onClick={() => setMenuOpen(!menuOpen)}
               >
-                {profileImage ? (
-                  <img src={profileImage} alt="Foto de perfil" />
+                {setProfileImage ? (
+                  <img src={setProfileImage} alt="Foto de perfil" />
                 ) : (
                   <span>{getInitials()}</span>
                 )}
@@ -127,7 +128,7 @@ function User_Oper() {
                 <div className="profile-dropdown">
                   <div className="profile-user-info">
                     <strong>
-                      {user.nombre} {user.apellidoPaterno}
+                      {user.nombre} {user.apellidoPaterno || user.ap_paterno || ''}
                     </strong>
                     <span>{user.email}</span>
                     <span>
@@ -215,8 +216,8 @@ function User_Oper() {
                   <>
                     <div className="perfil-hero">
                       <div className="perfil-photo-large">
-                        {profileImage ? (
-                          <img src={profileImage} alt="Avatar" />
+                        {setProfileImage ? (
+                          <img src={setProfileImage} alt="Avatar" />
                         ) : (
                           <span>{(user.nombre?.[0] || 'U').toUpperCase()}</span>
                         )}
@@ -228,7 +229,7 @@ function User_Oper() {
                         </div>
 
                         <span className="perfil-fullname">
-                          {user.nombre} {user.apellidoPaterno} {user.apellidoMaterno || ''}
+                          {user.nombre} {user.apellidoPaterno} {user.apellidoMaterno || user.ap_paterno || ''}
                         </span>
 
                         <div className="perfil-extra-line">

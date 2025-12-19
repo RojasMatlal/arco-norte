@@ -1,9 +1,9 @@
 // Importar módulo de base de datos
-//const db = require('./config/database');
+const db = require('./config/database');
 const cors = require("cors");
 require("dotenv").config();
 const express = require("express");
-//const mysql = require('mysql2/promise');
+const mysql = require('mysql2/promise');
 
 const app = express();
 

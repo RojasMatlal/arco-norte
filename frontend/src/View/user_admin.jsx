@@ -10,9 +10,10 @@ function User_Admin() {
   // ======= ESTADOS =======
   const [activeView, setActiveView] = useState('dashboard'); // dashboard | perfil
   const [menuOpen, setMenuOpen] = useState(false);
-  const [profileImage, setProfileImage] = useState(
-    user?.imagen || user?.imagen_usuario || null
-  );
+ const [setProfileImage] = useState(
+  user?.imagen || user?.imagen_usuario || null
+);
+
 
   // ======= AUTH + ROLE GUARD =======
   useEffect(() => {
@@ -32,6 +33,13 @@ function User_Admin() {
       navigate('/user_oper', { replace: true });
     }
   }, [navigate]);
+
+   // recargar imagen si cambia el user guardado
+  useEffect(() => {
+  setProfileImage(user?.imagen || user?.imagen_usuario || null);
+}, [user]);
+
+
 
   if (!user) {
     return (
@@ -66,7 +74,7 @@ function User_Admin() {
             <span>
               Bienvenido{' '}
               <strong>
-                {user.nombre} {user.apellidoPaterno}
+                {user.nombre} {user.apellidoPaterno || user.ap_paterno || ''}
               </strong>
             </span>
 
@@ -76,8 +84,8 @@ function User_Admin() {
                 className="header-avatar-button"
                 onClick={() => setMenuOpen(!menuOpen)}
               >
-                {profileImage ? (
-                  <img src={profileImage} alt="Avatar" />
+                {setProfileImage ? (
+                  <img src={setProfileImage} alt="Avatar" />
                 ) : (
                   <span>{getInitials()}</span>
                 )}
@@ -87,7 +95,7 @@ function User_Admin() {
                 <div className="profile-dropdown">
                   <div className="profile-user-info">
                     <strong>
-                      {user.nombre} {user.apellidoPaterno}
+                      {user.nombre} {user.apellidoPaterno || user.ap_paterno || ''}
                     </strong>
                     <span>{user.email}</span>
                     <span>
