@@ -8,7 +8,7 @@ function User_Oper() {
   const user = AuthService.getUser();
 
   const [activeView, setActiveView] = useState('dashboard'); // dashboard | perfil | historial
-  const [setProfileImage] = useState(
+  const [profileImage, setProfileImage] = useState(
   user?.imagen || user?.imagen_usuario || null
 );
 
@@ -117,8 +117,8 @@ function User_Oper() {
                 className="header-avatar-button"
                 onClick={() => setMenuOpen(!menuOpen)}
               >
-                {setProfileImage ? (
-                  <img src={setProfileImage} alt="Foto de perfil" />
+                {profileImage ? (
+                  <img src={profileImage} alt="Foto de perfil" />
                 ) : (
                   <span>{getInitials()}</span>
                 )}
@@ -216,8 +216,8 @@ function User_Oper() {
                   <>
                     <div className="perfil-hero">
                       <div className="perfil-photo-large">
-                        {setProfileImage ? (
-                          <img src={setProfileImage} alt="Avatar" />
+                        {profileImage ? (
+                          <img src={profileImage} alt="Avatar" />
                         ) : (
                           <span>{(user.nombre?.[0] || 'U').toUpperCase()}</span>
                         )}

@@ -9,7 +9,7 @@ const app = express();
 
 // Middlewares
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN || "http://localhost:3000",
+  origin: process.env.CLIENT_ORIGIN || 'http://localhost:3000',
   //credentials: true
 })
 );
@@ -21,9 +21,9 @@ const loginRoutes = require('./apis/Login');
 const rolesRoutes = require('./apis/Roles');
 const usersRoutes = require('./apis/Users');
 
-app.use('/api/login', loginRoutes);
-app.use('/api/roles', rolesRoutes);
-app.use('/api/users', usersRoutes);
+app.use('/apis/login', loginRoutes);
+app.use('/apis/roles', rolesRoutes);
+app.use('/apis/users', usersRoutes);
 
 
 app.get('/', (req, res) => {
@@ -52,8 +52,8 @@ app.post('/apis/login', async (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(` Servidor de ArcoNorte corriendo en puerto: ${PORT}`);
-  console.log(` Frontend: http://localhost:3000`);
-  console.log(` Backend API: http://localhost:${PORT}/apis`);
+  console.log(` Frontend: http://localhost:${PORT}/api/login`);
+  console.log(` Backend: http://localhost:${PORT}`);
   console.log(`  Health Check: http://localhost:${PORT}/config`);
-  console.log(`  Health Check: http://localhost:${PORT}/apis/login`);
+  console.log(`  Health Check: http://localhost:${PORT}/api/login`);
 });

@@ -7,39 +7,32 @@ function User_Admin() {
   const navigate = useNavigate();
   const user = AuthService.getUser();
 
-  // ======= ESTADOS =======
-  const [activeView, setActiveView] = useState('dashboard'); // dashboard | perfil
+  // ESTADOS 
+  const [activeView, setActiveView] = useState('dashboard');
   const [menuOpen, setMenuOpen] = useState(false);
- const [setProfileImage] = useState(
+
+ const [profileImage, setProfileImage] = useState(
   user?.imagen || user?.imagen_usuario || null
 );
 
 
-  // ======= AUTH + ROLE GUARD =======
+  // AUTH + ROLE GUARD
   useEffect(() => {
     const u = AuthService.getUser();
-
-    if (!u) {
-      navigate('/login', { replace: true });
-      return;
-    }
+    if (!u) navigate('/login', { replace: true });
 
     const idRol = Number(u.id_rol);
     const rolNombre = String(u.rol || '').toLowerCase();
-
     const isAdmin = idRol === 745 || rolNombre === 'administrador';
 
-    if (!isAdmin) {
-      navigate('/user_oper', { replace: true });
-    }
+    if (!isAdmin) navigate('/user_oper', { replace: true });
   }, [navigate]);
 
    // recargar imagen si cambia el user guardado
   useEffect(() => {
-  setProfileImage(user?.imagen || user?.imagen_usuario || null);
-}, [user]);
-
-
+    const u =AuthService.getUser();
+  setProfileImage(u?.imagen || u?.imagen_usuario || null);
+}, []);
 
   if (!user) {
     return (
@@ -52,7 +45,7 @@ function User_Admin() {
 
   // ======= UTILIDADES =======
   const getInitials = () => {
-    const fullName = `${user?.nombre || ''} ${user?.apellidoPaterno || ''}`.trim();
+    const fullName = `${user?.nombre || ''} ${user?.apellidoPaterno || user?.ap_paterno ||''}`.trim();
     const parts = fullName.split(' ').filter(Boolean);
     return parts.slice(0, 2).map(p => p[0]).join('').toUpperCase() || 'U';
   };
@@ -62,7 +55,7 @@ function User_Admin() {
     navigate('/login', { replace: true });
   };
 
-  // ======= RENDER =======
+  // RENDER 
   return (
     <div className="dashboard-container admin-dashboard">
       {/* ===== HEADER ===== */}
@@ -84,8 +77,8 @@ function User_Admin() {
                 className="header-avatar-button"
                 onClick={() => setMenuOpen(!menuOpen)}
               >
-                {setProfileImage ? (
-                  <img src={setProfileImage} alt="Avatar" />
+                {profileImage ? (
+                  <img src={profileImage} alt="Avatar" />
                 ) : (
                   <span>{getInitials()}</span>
                 )}
@@ -128,9 +121,7 @@ function User_Admin() {
         </div>
       </header>
 
-      {/* ===== CONTENIDO ===== */}
       <div className="dashboard-content">
-        {/* ===== DASHBOARD ===== */}
         {activeView === 'dashboard' && (
           <>
             <div className="stats-grid">

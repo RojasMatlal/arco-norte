@@ -1,44 +1,51 @@
 import axios from 'axios';
 
-const API = process.env.REACT_APP_API_URL;
-
-function normalizeUser(u) {
-  return {
-    id_usuario: u.id_usuario,
-    nombre: u.nombre,
-    apellidoPaterno: u.ap_paterno,
-    email: u.email,
-    id_rol: Number(u.id_rol),
-    rol: u.rol,
-  };
-}
+const API_BASE_URL = process.env.REACT_APP_API_URL; // || 'http://localhost:5000';
 
 export const AuthService = {
   async login(email, password) {
     try {
-      const res = await axios.post(`${API}/api/login`, { email, password });
+      const res = await axios.post(`${API_BASE_URL}/login`, { email, password },{timeout: 10000});
+      const data = res.data;
+      // normaliza el objeto user para que SIEMPRE tenga id_rol
+if (data.user) {
+  const u = data.user;
+  const normalized = {
+    ...u,
+    id_rol: Number(u.id_rol ?? u.rol_id ?? u.idRol ?? u.id_role),
+    rol: u.rol ?? u.role ?? u.nombre_rol,
+  };
+  localStorage.setItem("user", JSON.stringify(normalized));
+}
 
-      if (res.data.success) {
-        const user = normalizeUser(res.data.user);
-        localStorage.setItem('user', JSON.stringify(user));
+      if (!data?.success) return data;
+
+      if (data.token) localStorage.setItem("token", data.token);
+      if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
+
+      return data;
+    } catch (err) {
+      console.error("LOGIN ERROR:", err);
+
+      const status =err?.response?.status;
+      const serverMsg = err?.response?.data?.message;
+      const urlMsg = `API_BASE_URL=${API_BASE_URL}`;
+    if (status) {
+        return { success: false, message: `HTTP ${status}: ${serverMsg || "Respuesta sin message"} | ${urlMsg}` };
       }
 
-      return res.data;
-    } catch (err) {
-      return { success: false, message: 'No se pudo conectar con el servidor' };
+      // CORS / servidor apagado / URL mal
+      return { success: false, message: `Sin respuesta del servidor (CORS/URL/Servidor apagado). ${urlMsg}` };
     }
   },
 
   getUser() {
-    return JSON.parse(localStorage.getItem('user'));
-  },
-
-  isAuthenticated() {
-    return !!localStorage.getItem('user');
+    const raw = localStorage.getItem("user");
+    return raw ? JSON.parse(raw) : null;
   },
 
   logout() {
-    localStorage.clear();
-    window.location.href = '/login';
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
   },
 };

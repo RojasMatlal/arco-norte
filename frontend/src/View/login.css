@@ -171,3 +171,23 @@
   padding-left: 1.2rem;
   font-size: 0.85rem;
 }
+.mui-like-input{
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  outline: none;
+  transition: border .2s ease, box-shadow .2s ease;
+}
+
+.mui-like-input:focus{
+  border-color: rgba(255,255,255,0.6);
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.12);
+}
+
+.mui-like-input:disabled{
+  opacity: 0.6;
+  cursor: not-allowed;
+}
