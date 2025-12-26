@@ -197,7 +197,7 @@ function User_Oper() {
                 onClick={() => setActiveView('dashboard')}
                 type="button"
               >
-                ← Volver al panel
+                ← Volver
               </button>
             </div>
 
@@ -229,11 +229,11 @@ function User_Oper() {
                         </div>
 
                         <span className="perfil-fullname">
-                          {user.nombre} {user.apellidoPaterno} {user.apellidoMaterno || user.ap_paterno || ''}
+                          {user.nombre} {user.apellidoPaterno} {user.apellidoMaterno} {user.ap_paterno}
                         </span>
 
                         <div className="perfil-extra-line">
-                          <strong>{user.rol}</strong> · {user.area || 'Sin área'}
+                          <strong>{user.rol}</strong> · {user.area || 'Sin área'} 
                         </div>
 
                         {/* Si luego conectas avatar, aquí quedará listo */}
@@ -252,10 +252,13 @@ function User_Oper() {
                     <div className="perfil-detail-card">
                       <h3>Información de la cuenta</h3>
                       <div className="perfil-detail-grid">
-                        <p><strong>Nombre:</strong> {user.nombre} {user.apellidoPaterno}</p>
-                        <p><strong>Usuario (correo):</strong> {user.email}</p>
-                        <p><strong>Área:</strong> {user.area || 'Sin área'}</p>
-                        <p><strong>Rol:</strong> {user.rol}</p>
+                        <p><strong>Nombre:</strong> {user.nombre}</p>
+                <p><strong>Apellido Paterno:</strong> {user.apellidoPaterno}</p>
+                <p><strong>Apellido Materno:</strong> {user.apellidoMaterno}</p>
+                <p><strong>Sexo:</strong> {user.sexo}</p>
+                <p><strong>Email:</strong> {user.email}</p>
+                <p><strong>Rol:</strong> {user.rol}</p>
+                <p><strong>Área:</strong> {user.area}</p>
 
                         {/* Si después conectas BD, estas líneas se pueden sustituir por u.* */}
                         {'sexo_usuario' in u && (

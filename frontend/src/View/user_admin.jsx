@@ -10,11 +10,46 @@ function User_Admin() {
   // ESTADOS 
   const [activeView, setActiveView] = useState('dashboard');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [totalUsuarios, setTotalUsuarios] = useState(0);
+  
+  const [profileImage, setProfileImage] = useState(
+    user?.imagen || user?.imagen_usuario || null
+  );
+  
+  //contador en tiempo real
+useEffect(() => {
+  let alive = true;
 
- const [profileImage, setProfileImage] = useState(
-  user?.imagen || user?.imagen_usuario || null
-);
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
+  const urls = [
+    `${API_BASE}/apis/users/count`,
+    `${API_BASE}/api/users/count`,
+  ];
+
+  const fetchCount = async () => {
+    for (const url of urls) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+
+        const data = await res.json();
+        if (alive && data?.success) {
+          setTotalUsuarios(Number(data.total || 0));
+          return;
+        }
+      } catch (e) {}
+    }
+  };
+
+  fetchCount();
+  const interval = setInterval(fetchCount, 3000);
+
+  return () => {
+    alive = false;
+    clearInterval(interval);
+  };
+}, []);
 
   // AUTH + ROLE GUARD
   useEffect(() => {
@@ -27,6 +62,8 @@ function User_Admin() {
 
     if (!isAdmin) navigate('/user_oper', { replace: true });
   }, [navigate]);
+
+
 
    // recargar imagen si cambia el user guardado
   useEffect(() => {
@@ -124,23 +161,38 @@ function User_Admin() {
       <div className="dashboard-content">
         {activeView === 'dashboard' && (
           <>
-            <div className="stats-grid">
+             <div className="stats-grid">
               <div className="stat-card">
                 <h3>Usuarios Totales</h3>
-                <p className="stat-number">—</p>
+                <p className="stat-number">{totalUsuarios || ' _ '}</p>
                 <div className="stat-trend up">En tiempo real</div>
               </div>
-
+              <button className="action-card admin-action">
+                <div className="action-icon">🗓️</div>
+                <h3>Transito</h3>
+                <p>Fecha/Hora - ID Lugar</p>
+              </button>
               <button className="action-card admin-action">
                 <div className="action-icon">📹</div>
                 <h3>OCR</h3>
-                <p>Lectura de matrículas</p>
+                <p>OCR y Matriculas</p>
               </button>
+            </div>
 
+            <div className="actions-grid">
               <button className="action-card admin-action">
                 <div className="action-icon">📑</div>
-                <h3>Reportes</h3>
-                <p>Historiales y búsquedas</p>
+                <h3>Historiales</h3>
+                <p>Reportes detallados de busquedas</p>
+              </button>
+
+              <button
+                className="action-card admin-action"
+                onClick={() => setActiveView('permisos')}
+              >
+                <div className="action-icon">🔐</div>
+                <h3>Permisos</h3>
+                <p>Gestionar roles, acceso y registros</p>
               </button>
             </div>
           </>
@@ -163,7 +215,9 @@ function User_Admin() {
               <h3>Información de la cuenta</h3>
               <div className="perfil-detail-grid">
                 <p><strong>Nombre:</strong> {user.nombre}</p>
-                <p><strong>Apellido:</strong> {user.apellidoPaterno}</p>
+                <p><strong>Apellido Paterno:</strong> {user.apellidoPaterno}</p>
+                <p><strong>Apellido Materno:</strong> {user.apellidoMaterno}</p>
+                <p><strong>Sexo:</strong> {user.sexo}</p>
                 <p><strong>Email:</strong> {user.email}</p>
                 <p><strong>Rol:</strong> {user.rol}</p>
                 <p><strong>Área:</strong> {user.area}</p>

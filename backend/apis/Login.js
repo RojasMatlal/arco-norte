@@ -4,6 +4,8 @@ const crypto = require('crypto');
 const router = express.Router();
 const db = require('../config/database');
 
+
+
 // POST /api/login
 router.post('/', async (req, res) => {
   try {
@@ -72,12 +74,14 @@ router.post('/', async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error en /api/login:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error interno del servidor',
-    });
-  }
+  console.error('Error en /login:', error);
+  return res.status(500).json({
+    success: false,
+    message: 'Error interno del servidor',
+    debug: error?.sqlMessage || error?.message || String(error),
+  });
+}
+
 });
 
 module.exports = router;
