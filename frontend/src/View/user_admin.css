@@ -279,3 +279,302 @@
     transform: rotate(360deg);
   }
 }
+/* ===========================
+   PERMISOS VIEW (card + tabs)
+   =========================== */
+
+.permisos-view{
+  max-width: 1180px;
+  margin: 28px auto;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 22px 22px 26px;
+  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.10);
+}
+
+/* Header: título + volver */
+.permisos-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.permisos-header h2{
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* Tabs estilo “pill” */
+.permisos-tabs{
+  display: flex;
+  gap: 12px;
+  margin: 10px 0 18px;
+}
+
+.permisos-tab{
+  appearance: none;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  background: #ffffff;
+  color: #0f172a;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.permisos-tab:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.10);
+}
+
+.permisos-tab.active{
+  background: #5b5fe6;   /* morado-azul como tu diseño */
+  color: #fff;
+  border-color: transparent;
+}
+
+/* ===========================
+   BOTONES (reutilizables)
+   =========================== */
+
+.btn-primary{
+  background: #5b5fe6;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 160ms ease, opacity 160ms ease;
+  box-shadow: 0 10px 18px rgba(91, 95, 230, 0.25);
+}
+
+.btn-primary:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 25px rgba(91, 95, 230, 0.30);
+}
+
+.btn-primary:disabled{
+  opacity: .65;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-secondary{
+  background: #eef0f5;
+  color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  padding: 9px 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 160ms ease;
+}
+
+.btn-secondary:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.10);
+}
+
+/* Botones pequeños de la tabla */
+.btn-small{
+  background: #eef0f5;
+  color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-right: 8px;
+  transition: transform 120ms ease, box-shadow 160ms ease, background 160ms ease;
+  white-space: nowrap;
+}
+
+.btn-small:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.10);
+  background: #e8ebf3;
+}
+
+.btn-small.danger{
+  background: #ffe8e8;
+  border-color: rgba(220, 38, 38, 0.25);
+  color: #b91c1c;
+}
+
+.btn-small.danger:hover{
+  background: #ffdede;
+}
+
+/* ===========================
+   REGISTRO (form mejorado)
+   =========================== */
+
+.registro-usuario-form{
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fafbff;
+  border-radius: 16px;
+  padding: 18px 16px;
+}
+
+.registro-usuario-form h3{
+  margin: 0 0 14px;
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+/* grid 2 columnas (tu JSX usa form-grid-2) */
+.form-grid-2{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+}
+
+/* fila normal */
+.form-row{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-row label{
+  font-weight: 800;
+  color: #0f172a;
+  font-size: 0.92rem;
+}
+
+/* inputs/select */
+.form-row input,
+.form-row select{
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  padding: 0 12px;
+  font-size: 0.95rem;
+  outline: none;
+  background: #fff;
+  transition: border-color 140ms ease, box-shadow 160ms ease;
+}
+
+.form-row input:focus,
+.form-row select:focus{
+  border-color: rgba(91, 95, 230, 0.65);
+  box-shadow: 0 0 0 4px rgba(91, 95, 230, 0.15);
+}
+
+/* fila completa (tu JSX usa form-row-full) */
+.form-row-full{
+  grid-column: 1 / -1;
+}
+
+/* Botón subir foto reutiliza btn-primary + perfil-change-photo */
+.perfil-change-photo{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: fit-content;
+  padding: 10px 14px;
+  border-radius: 12px;
+}
+
+/* Acciones del formulario */
+.permisos-actions{
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* Responsive */
+@media (max-width: 820px){
+  .permisos-view{
+    margin: 18px 12px;
+    padding: 18px 14px 20px;
+  }
+
+  .permisos-header{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-grid-2{
+    grid-template-columns: 1fr;
+  }
+
+  .permisos-actions{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-primary,
+  .btn-secondary{
+    width: 100%;
+  }
+}
+
+/* ===========================
+   GESTIÓN (tabla usuarios)
+   =========================== */
+
+.usuarios-tabla-wrapper{
+  margin-top: 10px;
+}
+
+.usuarios-tabla-wrapper h3{
+  margin: 0 0 10px;
+  font-size: 1.12rem;
+  font-weight: 900;
+  color: #090214;
+}
+
+.usuarios-tabla{
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  background: #fff;
+}
+
+.usuarios-tabla thead th{
+  text-align: left;
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: #0f172a;
+  background: #f2f4f8;
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.10);
+}
+
+.usuarios-tabla tbody td{
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  font-size: 0.92rem;
+  color: #0f172a;
+  vertical-align: middle;
+}
+
+.usuarios-tabla tbody tr:hover td{
+  background: #fafbff;
+}
+
+/* Para que el colSpan se vea centrado cuando no hay datos */
+.usuarios-tabla tbody td[colspan]{
+  text-align: center;
+  color: rgba(15, 23, 42, 0.70);
+  padding: 18px 12px;
+}
+
+/* Acciones en tabla más ordenadas */
+.usuarios-tabla td:last-child{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}

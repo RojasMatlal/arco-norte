@@ -23,9 +23,6 @@ app.use('/api/login', loginRoutes);
 app.use('/api/roles', rolesRoutes);
 app.use('/api/users', usersRoutes);
 
-app.use('/apis/users', require('./apis/Users'));
-
-
 app.get('/', (req, res) => res.send('Backend funcionando!'));
 
 // Endpoint de healthcheck para probar conexión a la BD
