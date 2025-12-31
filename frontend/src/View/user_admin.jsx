@@ -77,7 +77,7 @@ const limpiarFormulario = () => {
 const fetchUsuarios = async () => {
   setLoadingUsuarios(true);
   try {
-    const url = `${API_BASE}/apis/users`;
+    const url = `${API_BASE}/apis/users/count`;
     const res = await fetch(url);
     const data = await res.json();
 
@@ -189,7 +189,7 @@ useEffect(() => {
 
   const fetchCount = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/users/count`);
+      const res = await fetch(`${API_BASE}/apis/users/count`);
       const data = await res.json();
 
       if (!alive) return;
@@ -323,6 +323,7 @@ useEffect(() => {
 
       <div className="dashboard-content">
         {activeView === 'dashboard' && (
+          
           <>
              <div className="stats-grid">
               <div className="stat-card">

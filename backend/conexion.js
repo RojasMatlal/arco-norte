@@ -17,8 +17,6 @@ const loginRoutes = require('./apis/Login');
 const rolesRoutes = require('./apis/Roles');
 const usersRoutes = require('./apis/Users');
 
-
-
 app.use('/api/login', loginRoutes);
 app.use('/api/roles', rolesRoutes);
 app.use('/api/users', usersRoutes);

@@ -162,6 +162,7 @@ function User_Oper() {
       <div className="dashboard-content">
         {/* -------- DASHBOARD -------- */}
         {activeView === 'dashboard' && (
+          <>
           <div className="actions-grid">
             <button
               className="action-card oper-action"
@@ -175,16 +176,32 @@ function User_Oper() {
 
             <button className="action-card operador-action" type="button">
               <div className="action-icon">🗓️</div>
-              <h3>Tránsito</h3>
-              <p>Fecha/Hora - ID Lugar</p>
+              <h3>Fecha y Hora</h3>
+              <p>Fecha/Hora</p>
             </button>
 
             <button className="action-card admin-action" type="button">
-              <div className="action-icon">📹</div>
-              <h3>OCR</h3>
-              <p>OCR y Matrículas</p>
+              <div className="action-icon">🚏</div>
+              <h3>Lugar</h3>
+              <p>ID Lugar</p>
             </button>
           </div>
+
+            <div className="actions-grid">
+            <button className="action-card admin-action" type="button">
+              <div className="action-icon">📹</div>
+              <h3>OCR</h3>
+              <p>OCR</p>
+            </button>
+
+
+            <button className="action-card admin-action" type="button">
+              <div className="action-icon">🪪</div>
+              <h3>Matriculas</h3>
+              <p>Matrículas</p>
+            </button>
+            </div>
+            </>
         )}
 
         {/* -------- PERFIL -------- */}
