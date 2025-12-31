@@ -35,3 +35,6 @@ CREATE TABLE usuarios (
 INSERT INTO usuarios (id_usuario, nombre_usuario, ap_usuario, sexo_usuario, email_usuario, password_usuario, id_rol, area_usuario) VALUES
 	(NULL, 'Evelin', 'Rojas', 0, 'evelin@gmail.com', SHA2('evelin123',256), 745, 'Administracion'),
 	(NULL, 'Alejandro', 'Sainz', 1, 'ale@gmail.com', SHA2('ale123',256), 125, 'Operaciones');
+
+	INSERT INTO usuarios (id_usuario, nombre_usuario, ap_usuario, sexo_usuario, email_usuario, password_usuario, id_rol, area_usuario) VALUES
+	(NULL, 'Jesus', 'Rodriguez', 0, 'jesustest@gmail.com', SHA2('jesus123',256), 745, 'Administracion')
