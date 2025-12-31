@@ -9,58 +9,20 @@ function User_Admin() {
 
   const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-  // ESTADOS 
+  // ===================== ESTADOS =====================
   const [activeView, setActiveView] = useState('dashboard');
   const [menuOpen, setMenuOpen] = useState(false);
   const [totalUsuarios, setTotalUsuarios] = useState(0);
-  
+
   const [profileImage, setProfileImage] = useState(
     user?.imagen || user?.imagen_usuario || null
   );
 
-// ===================== PERMISOS / USUARIOS (ESTADOS) =====================
-const [permisosTab, setPermisosTab] = useState('registro'); // 'registro' | 'gestion'
-const [editingUserId, setEditingUserId] = useState(null);
+  // ===================== PERMISOS / USUARIOS =====================
+  const [permisosTab, setPermisosTab] = useState('registro');
+  const [editingUserId, setEditingUserId] = useState(null);
 
-const [formUsuario, setFormUsuario] = useState({
-  nombre: '',
-  apellidoPaterno: '',
-  apellidoMaterno: '',
-  sexo: '0',
-  area: '',
-  id_rol: '',
-  email: '',
-  password: '',
-  imagenFile: null,
-});
-
-const [loadingUsuarios, setLoadingUsuarios] = useState(false);
-const [listaUsuariosTabla, setListaUsuariosTabla] = useState([]);
-
-// ===================== PERFIL (PLACEHOLDER) =====================
-const [perfilDB, setPerfilDB] = useState(null);
-const [loadingPerfil, setLoadingPerfil] = useState(false);
-
-const renderSexo = (sexo) => {
-  if (sexo === 1 || sexo === '1') return 'Femenino';
-  if (sexo === 2 || sexo === '2') return 'Masculino';
-  return 'No especificado';
-};
-
-// ===================== FORM HANDLERS =====================
-const handleFormChange = (e) => {
-  const { name, value } = e.target;
-  setFormUsuario((prev) => ({ ...prev, [name]: value }));
-};
-
-const handleAvatarFile = (e) => {
-  const file = e.target.files?.[0] || null;
-  setFormUsuario((prev) => ({ ...prev, imagenFile: file }));
-};
-
-const limpiarFormulario = () => {
-  setEditingUserId(null);
-  setFormUsuario({
+  const [formUsuario, setFormUsuario] = useState({
     nombre: '',
     apellidoPaterno: '',
     apellidoMaterno: '',
@@ -71,168 +33,163 @@ const limpiarFormulario = () => {
     password: '',
     imagenFile: null,
   });
-};
 
-// ===================== CARGAR USUARIOS (para pestaña Gestión) =====================
-const fetchUsuarios = async () => {
-  setLoadingUsuarios(true);
-  try {
-    const url = `${API_BASE}/apis/users`;
-    const res = await fetch(url);
-    const data = await res.json();
+  const [loadingUsuarios, setLoadingUsuarios] = useState(false);
+  const [listaUsuariosTabla, setListaUsuariosTabla] = useState([]);
 
-    if (res.ok && data?.success && Array.isArray(data.data)) {
-      setListaUsuariosTabla(data.data);
-    } else {
-      setListaUsuariosTabla([]);
-    }
-  } catch (e) {
-    setListaUsuariosTabla([]);
-  } finally {
-    setLoadingUsuarios(false);
-  }
-};
+  // ===================== PERFIL =====================
+  const [perfilDB, setPerfilDB] = useState(null);
+  const [loadingPerfil, setLoadingPerfil] = useState(false);
 
-// Cuando entres a la pestaña "gestion", carga tabla
-useEffect(() => {
-  if (activeView === 'permisos' && permisosTab === 'gestion') {
-    fetchUsuarios();
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [activeView, permisosTab]);
+  // ===================== UTILIDADES =====================
+  const renderSexo = (sexo) => {
+    if (sexo === 1 || sexo === '1') return 'Femenino';
+    if (sexo === 2 || sexo === '2') return 'Masculino';
+    return 'No especificado';
+  };
 
-// ===================== CRUD (BASE) =====================
-// OJO: aquí uso POST /apis/users para registrar.
-// Si aún no tienes endpoint PUT/PATCH/DELETE, dejo placeholders para que compile.
-const handleRegistrarOActualizar = async (e) => {
-  e.preventDefault();
+  const getInitials = () => {
+    const fullName = `${user?.nombre || ''} ${user?.apellidoPaterno || user?.ap_paterno || ''}`.trim();
+    const parts = fullName.split(' ').filter(Boolean);
+    return parts.slice(0, 2).map(p => p[0]).join('').toUpperCase() || 'U';
+  };
 
-  try {
-    // ✅ Registrar (POST). Si estás editando y aún no tienes endpoint update, por ahora solo registrar.
-    const url = `${API_BASE}/apis/users`;
+  // ===================== FORM HANDLERS =====================
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormUsuario(prev => ({ ...prev, [name]: value }));
+  };
 
-    const payload = {
-      nombre: formUsuario.nombre,
-      apellidoPaterno: formUsuario.apellidoPaterno,
-      apellidoMaterno: formUsuario.apellidoMaterno,
-      sexo: formUsuario.sexo,
-      area: formUsuario.area,
-      id_rol: formUsuario.id_rol,
-      email: formUsuario.email,
-      password: formUsuario.password,
-    };
+  const handleAvatarFile = (e) => {
+    const file = e.target.files?.[0] || null;
+    setFormUsuario(prev => ({ ...prev, imagenFile: file }));
+  };
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+  const limpiarFormulario = () => {
+    setEditingUserId(null);
+    setFormUsuario({
+      nombre: '',
+      apellidoPaterno: '',
+      apellidoMaterno: '',
+      sexo: '0',
+      area: '',
+      id_rol: '',
+      email: '',
+      password: '',
+      imagenFile: null,
     });
+  };
 
-    const data = await res.json();
-
-    if (!res.ok || !data?.success) {
-      alert(data?.message || 'No se pudo guardar el usuario');
-      return;
-    }
-
-    alert(editingUserId ? 'Guardado (modo básico)' : 'Usuario registrado');
-
-    limpiarFormulario();
-
-    // refresca tabla y contador
-    await fetchUsuarios();
-    // el contador se actualiza por el polling cada 3s, pero si quieres inmediato:
-    // setTimeout(() => window.dispatchEvent(new Event('forceCount')), 0);
-  } catch (err) {
-    alert('Error al guardar usuario');
-  }
-};
-
-const handleEditarUsuario = (u) => {
-  setPermisosTab('registro');
-  setEditingUserId(u.id_usuario);
-
-  setFormUsuario((prev) => ({
-    ...prev,
-    nombre: u.nombre_usuario || '',
-    apellidoPaterno: u.ap_usuario || '',
-    apellidoMaterno: u.am_usuario || '',
-    sexo: String(u.sexo_usuario ?? '0'),
-    area: u.area_usuario || '',
-    id_rol: String(u.id_rol ?? ''),
-    email: u.email_usuario || '',
-    password: '', // no rellenar password
-    imagenFile: null,
-  }));
-};
-
-const handleCambiarEstatus = async (u, nuevoEstatus) => {
-  // Placeholder para que compile: si luego haces endpoint real, lo conectas.
-  alert(`Aquí va el endpoint para cambiar estatus de ${u.id_usuario} a ${nuevoEstatus}`);
-};
-
-const handleEliminarUsuario = async (u) => {
-  // Placeholder para que compile: si luego haces endpoint real, lo conectas.
-  alert(`Aquí va el endpoint para eliminar usuario ${u.id_usuario}`);
-};
-
-// ===================== FOTO PERFIL (PLACEHOLDER) =====================
-const handleChangePhoto = () => {
-  alert('Aquí conectas la subida/cambio de foto si luego agregas endpoint');
-};
-  
-  //contador en tiempo real
-useEffect(() => {
-  let alive = true;
-
-  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
-  const fetchCount = async () => {
+  // ===================== USUARIOS =====================
+  const fetchUsuarios = async () => {
+    setLoadingUsuarios(true);
     try {
-      const res = await fetch(`${API_BASE}/api/users/count`);
+      const res = await fetch(`${API_BASE}/apis/users`);
+      const data = await res.json();
+      if (res.ok && data?.success) {
+        setListaUsuariosTabla(data.data);
+      } else {
+        setListaUsuariosTabla([]);
+      }
+    } catch {
+      setListaUsuariosTabla([]);
+    } finally {
+      setLoadingUsuarios(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeView === 'permisos' && permisosTab === 'gestion') {
+      fetchUsuarios();
+    }
+  }, [activeView, permisosTab]);
+
+  const handleRegistrarOActualizar = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch(`${API_BASE}/apis/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formUsuario),
+      });
+
       const data = await res.json();
 
-      if (!alive) return;
-
-      if (res.ok && data?.success) {
-        setTotalUsuarios(Number(data.total || 0));
-      } else {
-        setTotalUsuarios(0);
+      if (!res.ok || !data?.success) {
+        alert(data?.message || 'No se pudo guardar el usuario');
+        return;
       }
-    } catch (e) {
-      if (!alive) return;
-      setTotalUsuarios(0);
+
+      alert(editingUserId ? 'Guardado (modo básico)' : 'Usuario registrado');
+      limpiarFormulario();
+      fetchUsuarios();
+    } catch {
+      alert('Error al guardar usuario');
     }
   };
 
-  fetchCount();
-  const interval = setInterval(fetchCount, 3000);
+  const handleEditarUsuario = (u) => {
+    setPermisosTab('registro');
+    setEditingUserId(u.id_usuario);
 
-  return () => {
-    alive = false;
-    clearInterval(interval);
+    setFormUsuario({
+      nombre: u.nombre_usuario || '',
+      apellidoPaterno: u.ap_usuario || '',
+      apellidoMaterno: u.am_usuario || '',
+      sexo: String(u.sexo_usuario ?? '0'),
+      area: u.area_usuario || '',
+      id_rol: String(u.id_rol ?? ''),
+      email: u.email_usuario || '',
+      password: '',
+      imagenFile: null,
+    });
   };
-}, []);
 
-  // AUTH + ROLE GUARD
+  const handleCambiarEstatus = (u, estatus) => {
+    alert(`Aquí va el endpoint para cambiar estatus de ${u.id_usuario} a ${estatus}`);
+  };
+
+  const handleEliminarUsuario = (u) => {
+    alert(`Aquí va el endpoint para eliminar usuario ${u.id_usuario}`);
+  };
+
+  const handleChangePhoto = () => {
+    alert('Aquí conectas la subida/cambio de foto');
+  };
+
+  // ===================== CONTADOR =====================
+  useEffect(() => {
+    let alive = true;
+
+    const fetchCount = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/users/count`);
+        const data = await res.json();
+        if (alive) {
+          setTotalUsuarios(res.ok && data?.success ? Number(data.total || 0) : 0);
+        }
+      } catch {
+        if (alive) setTotalUsuarios(0);
+      }
+    };
+
+    fetchCount();
+    const i = setInterval(fetchCount, 3000);
+    return () => { alive = false; clearInterval(i); };
+  }, []);
+
+  // ===================== AUTH =====================
   useEffect(() => {
     const u = AuthService.getUser();
     if (!u) navigate('/login', { replace: true });
 
-    const idRol = Number(u.id_rol);
-    const rolNombre = String(u.rol || '').toLowerCase();
-    const isAdmin = idRol === 745 || rolNombre === 'administrador';
+    const isAdmin =
+      Number(u.id_rol) === 745 ||
+      String(u.rol || '').toLowerCase() === 'administrador';
 
     if (!isAdmin) navigate('/user_oper', { replace: true });
   }, [navigate]);
-
-
-
-   // recargar imagen si cambia el user guardado
-  useEffect(() => {
-    const u =AuthService.getUser();
-  setProfileImage(u?.imagen || u?.imagen_usuario || null);
-}, []);
 
   if (!user) {
     return (
@@ -243,21 +200,10 @@ useEffect(() => {
     );
   }
 
-  // ======= UTILIDADES =======
-  const getInitials = () => {
-    const fullName = `${user?.nombre || ''} ${user?.apellidoPaterno || user?.ap_paterno ||''}`.trim();
-    const parts = fullName.split(' ').filter(Boolean);
-    return parts.slice(0, 2).map(p => p[0]).join('').toUpperCase() || 'U';
-  };
-
-  const handleLogout = () => {
-    AuthService.logout();
-    navigate('/login', { replace: true });
-  };
-
-  // RENDER 
+  // ===================== RENDER =====================
   return (
     <div className="dashboard-container admin-dashboard">
+
       {/* ===== HEADER ===== */}
       <header className="dashboard-header">
         <div className="header-content">
@@ -265,10 +211,7 @@ useEffect(() => {
 
           <div className="user-info">
             <span>
-              Bienvenido{' '}
-              <strong>
-                {user.nombre} {user.apellidoPaterno || user.ap_paterno || ''}
-              </strong>
+              Bienvenido <strong>{user.nombre} {user.apellidoPaterno || user.ap_paterno || ''}</strong>
             </span>
 
             <div className="profile-menu-container">
@@ -277,27 +220,18 @@ useEffect(() => {
                 className="header-avatar-button"
                 onClick={() => setMenuOpen(!menuOpen)}
               >
-                {profileImage ? (
-                  <img src={profileImage} alt="Avatar" />
-                ) : (
-                  <span>{getInitials()}</span>
-                )}
+                {profileImage ? <img src={profileImage} alt="Avatar" /> : <span>{getInitials()}</span>}
               </button>
 
               {menuOpen && (
                 <div className="profile-dropdown">
                   <div className="profile-user-info">
-                    <strong>
-                      {user.nombre} {user.apellidoPaterno || user.ap_paterno || ''}
-                    </strong>
+                    <strong>{user.nombre}</strong>
                     <span>{user.email}</span>
-                    <span>
-                      {user.rol} · {user.area || 'Sin área'}
-                    </span>
+                    <span>{user.rol} · {user.area || 'Sin área'}</span>
                   </div>
 
                   <button
-                    type="button"
                     className="profile-dropdown-item"
                     onClick={() => {
                       setActiveView('perfil');
@@ -308,9 +242,11 @@ useEffect(() => {
                   </button>
 
                   <button
-                    type="button"
                     className="profile-dropdown-item logout"
-                    onClick={handleLogout}
+                    onClick={() => {
+                      AuthService.logout();
+                      navigate('/login', { replace: true });
+                    }}
                   >
                     Cerrar sesión
                   </button>
@@ -322,20 +258,24 @@ useEffect(() => {
       </header>
 
       <div className="dashboard-content">
+
+        {/* ===== DASHBOARD ===== */}
         {activeView === 'dashboard' && (
           <>
-             <div className="stats-grid">
+            <div className="stats-grid">
               <div className="stat-card">
                 <h3>Usuarios Totales</h3>
-               <p className="stat-number">{Number.isFinite(totalUsuarios) ? totalUsuarios : '—'}</p>
+                <p className="stat-number">{totalUsuarios}</p>
                 <div className="stat-trend up">En tiempo real</div>
               </div>
-              <button className="action-card admin-action">
+
+              <button className="action-card admin-action" onClick={() => setActiveView('transito')}>
                 <div className="action-icon">🗓️</div>
                 <h3>Transito</h3>
                 <p>Fecha/Hora - ID Lugar</p>
               </button>
-              <button className="action-card admin-action">
+
+              <button className="action-card admin-action" onClick={() => setActiveView('ocr')}>
                 <div className="action-icon">📹</div>
                 <h3>OCR</h3>
                 <p>OCR y Matriculas</p>
@@ -343,7 +283,7 @@ useEffect(() => {
             </div>
 
             <div className="actions-grid">
-              <button className="action-card admin-action">
+              <button className="action-card admin-action" onClick={() => setActiveView('historial')}>
                 <div className="action-icon">📑</div>
                 <h3>Historiales</h3>
                 <p>Reportes detallados de busquedas</p>
@@ -359,6 +299,72 @@ useEffect(() => {
               </button>
             </div>
           </>
+        )}
+
+        {/* ===== TRANSITO ===== */}
+        {activeView === 'transito' && (
+          <div className="permisos-view">
+            <div className="permisos-header">
+              <h2>Tránsito</h2>
+              <button className="btn-secondary" onClick={() => setActiveView('dashboard')}>
+                ← Volver al panel
+              </button>
+            </div>
+
+            <form className="registro-usuario-form">
+              <h3>Búsqueda de tránsito</h3>
+              <div className="form-grid-2">
+                <div className="form-row">
+                  <label>Fecha</label>
+                  <input type="date" />
+                </div>
+                <div className="form-row">
+                  <label>Hora</label>
+                  <input type="time" />
+                </div>
+                <div className="form-row">
+                  <label>ID Lugar</label>
+                  <input type="text" />
+                </div>
+              </div>
+              <div className="permisos-actions">
+                <button type="button" className="btn-primary">Buscar</button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* ===== OCR ===== */}
+        {activeView === 'ocr' && (
+          <div className="permisos-view">
+            <div className="permisos-header">
+              <h2>OCR</h2>
+              <button className="btn-secondary" onClick={() => setActiveView('dashboard')}>
+                ← Volver al panel
+              </button>
+            </div>
+
+            <div className="registro-usuario-form">
+              <h3>Procesar imagen</h3>
+              <label className="btn-primary perfil-change-photo">
+                Seleccionar imagen
+                <input type="file" accept="image/*" style={{ display: 'none' }} />
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* ===== HISTORIAL ===== */}
+        {activeView === 'historial' && (
+          <div className="historial-view">
+            <div className="perfil-header">
+              <h2>Historial</h2>
+              <button className="btn-secondary" onClick={() => setActiveView('dashboard')}>
+                ← Volver al panel
+              </button>
+            </div>
+            <p>Vista de historial en construcción…</p>
+          </div>
         )}
 
         {/* -------- PERMISOS / USUARIOS -------- */}
@@ -716,21 +722,7 @@ useEffect(() => {
           </div>
         )}
 
-        {activeView === 'historial' && (
-          <div className="historial-view">
-            <div className="perfil-header">
-              <h2>Historial</h2>
-              <button
-                className="btn-secondary"
-                onClick={() => setActiveView('dashboard')}
-              >
-                ← Volver al panel
-              </button>
-            </div>
-            <p>Vista de historial en construcción…</p>
-          </div>
-        )}
-
+     
         {/* ===== PERFIL ===== */}
         {activeView === 'perfil' && (
           <div className="perfil-instagram">
@@ -758,9 +750,14 @@ useEffect(() => {
             </div>
           </div>
         )}
+
       </div>
     </div>
   );
 }
 
 export default User_Admin;
+
+
+
+
