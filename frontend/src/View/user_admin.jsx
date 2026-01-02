@@ -3,6 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import './user_admin.css';
 
+/* ===================== DUMP LUGARES TLAXCALA ===================== */
+const LUGARES_TLAXCALA = [
+  {
+    id: 'CALPULALPAN',
+    nombre: 'Calpulalpan',
+    ip: '192.168.12.100',
+    motor: 'Microsoft SQL Server 2008 R2 (RTM) - 10.50.1600.1 (X64)',
+  },
+  {
+    id: 'SANCTORUM',
+    nombre: 'Sanctórum',
+    ip: '192.168.13.100',
+    motor: 'Microsoft SQL Server 2008 R2 (RTM) - 10.50.1600.1 (X64)',
+  },
+  {
+    id: 'SAN_MARTIN_TEXMELUCAN',
+    nombre: 'San Martín Texmelucan',
+    ip: '192.168.14.100',
+    motor: 'Microsoft SQL Server 2008 R2 (RTM) - 10.50.1600.1 (X64)',
+  },
+];
+
 function User_Admin() {
   const navigate = useNavigate();
   const user = AuthService.getUser();
@@ -10,9 +32,13 @@ function User_Admin() {
   const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
   // ESTADOS 
+  const [loading, setLoading] = useState(false);
   const [activeView, setActiveView] = useState('dashboard');
   const [menuOpen, setMenuOpen] = useState(false);
   const [totalUsuarios, setTotalUsuarios] = useState(0);
+  const [ocrImage, setOcrImage] = useState(null);
+  const [lugarSeleccionado, setLugarSeleccionado] = useState('');
+  
   
   const [profileImage, setProfileImage] = useState(
     user?.imagen || user?.imagen_usuario || null
@@ -77,21 +103,25 @@ const limpiarFormulario = () => {
 const fetchUsuarios = async () => {
   setLoadingUsuarios(true);
   try {
-    const url = `${API_BASE}/apis/users/count`;
+    const url = `${API_BASE}/apis/users`; // ✅ LISTADO, no /count
     const res = await fetch(url);
     const data = await res.json();
 
+    // Esperado: { success: true, data: [...] }
     if (res.ok && data?.success && Array.isArray(data.data)) {
       setListaUsuariosTabla(data.data);
     } else {
       setListaUsuariosTabla([]);
+      console.warn("Respuesta inesperada:", data);
     }
   } catch (e) {
+    console.error("Error fetchUsuarios:", e);
     setListaUsuariosTabla([]);
   } finally {
     setLoadingUsuarios(false);
   }
 };
+
 
 // Cuando entres a la pestaña "gestion", carga tabla
 useEffect(() => {
@@ -105,6 +135,8 @@ useEffect(() => {
 // OJO: aquí uso POST /apis/users para registrar.
 // Si aún no tienes endpoint PUT/PATCH/DELETE, dejo placeholders para que compile.
 const handleRegistrarOActualizar = async (e) => {
+  setPermisosTab('gestion');   // ✅ Cambia a la pestaña de tabla
+await fetchUsuarios();       // ✅ Recarga la lista
   e.preventDefault();
 
   try {
@@ -255,6 +287,14 @@ useEffect(() => {
     navigate('/login', { replace: true });
   };
 
+  const fakeLoad = (cb) => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      cb && cb();
+    }, 1200);
+  };
+
   // RENDER 
   return (
     <div className="dashboard-container admin-dashboard">
@@ -287,28 +327,11 @@ useEffect(() => {
               {menuOpen && (
                 <div className="profile-dropdown">
                   <div className="profile-user-info">
-                    <strong>
-                      {user.nombre} {user.apellidoPaterno || user.ap_paterno || ''}
-                    </strong>
-                    <span>{user.email}</span>
-                    <span>
-                      {user.rol} · {user.area || 'Sin área'}
-                    </span>
+                    <strong>{user.nombre}</strong>
+                    <span>{user?.email}</span>
                   </div>
 
                   <button
-                    type="button"
-                    className="profile-dropdown-item"
-                    onClick={() => {
-                      setActiveView('perfil');
-                      setMenuOpen(false);
-                    }}
-                  >
-                    Perfil del usuario
-                  </button>
-
-                  <button
-                    type="button"
                     className="profile-dropdown-item logout"
                     onClick={handleLogout}
                   >
@@ -331,24 +354,39 @@ useEffect(() => {
                <p className="stat-number">{Number.isFinite(totalUsuarios) ? totalUsuarios : '—'}</p>
                 <div className="stat-trend up">En tiempo real</div>
               </div>
-              <button className="action-card admin-action">
-                <div className="action-icon">🗓️</div>
-                <h3>Transito</h3>
-                <p>Fecha/Hora - ID Lugar</p>
-              </button>
-              <button className="action-card admin-action">
-                <div className="action-icon">📹</div>
-                <h3>OCR</h3>
-                <p>OCR y Matriculas</p>
-              </button>
-            </div>
 
-            <div className="actions-grid">
-              <button className="action-card admin-action">
+              <button className="action-card admin-action" onClick={() => setActiveView('historialAdmin')} >
                 <div className="action-icon">📑</div>
                 <h3>Historiales</h3>
                 <p>Reportes detallados de busquedas</p>
               </button>
+
+              <button className="action-card admin-action" onClick={() => setActiveView('fechaAdmin')}>
+                <div className="action-icon">🗓️</div>
+                <h3>Fecha y Hora</h3>
+                <p>Fecha/Hora</p>
+              </button>
+
+              <button className="action-card admin-action" onClick={() => setActiveView('lugarAdmin')}>
+                <div className="action-icon">📍</div>
+                <h3>Lugar</h3>
+                <p>ID Lugar</p>
+              </button>
+            </div>
+
+            <div className="actions-grid">
+              <button className="action-card admin-action" onClick={() => setActiveView('ocrAdmin')}>
+                <div className="action-icon">📷</div>
+                <h3>OCR</h3>
+                <p>OCR</p>
+              </button>
+
+              <button className="action-card admin-action" onClick={() => setActiveView('matriculasAdmin')}>
+                <div className="action-icon">🪪</div>
+                <h3>Matrículas</h3>
+                <p>Matrículas</p>
+              </button>
+
 
               <button
                 className="action-card admin-action"
@@ -360,6 +398,84 @@ useEffect(() => {
               </button>
             </div>
           </>
+        )}
+
+        {/* ===================== HISTORIAL ===================== */}
+        {activeView === 'historialAdmin' && (
+          <div className="permisos-view">
+            <h2>Historiales</h2>
+             <p>Cargando…</p>
+            <button className="btn-secondary" onClick={() => setActiveView('dashboard')}>← Volver</button>
+          </div>
+        )}
+
+        {/* ===================== FECHA ===================== */}
+        {activeView === 'fechaAdmin' && (
+          <div className="permisos-view">
+            <h2>Fecha y Hora</h2>
+            <input type="datetime-local" />
+            <button className="btn-primary" onClick={() => fakeLoad()}>Buscar</button>
+            {loading && <p>Cargando…</p>}
+            <button className="btn-secondary" onClick={() => setActiveView('dashboard')}>← Volver</button>
+          </div>
+        )}
+
+        {/* ===================== LUGAR ===================== */}
+        {activeView === 'lugarAdmin' && (
+          <div className="permisos-view">
+            <h2>Lugar</h2>
+
+            <select value={lugarSeleccionado} onChange={e => setLugarSeleccionado(e.target.value)}>
+              <option value="">-- Selecciona --</option>
+              {LUGARES_TLAXCALA.map(l => (
+                <option key={l.id} value={l.id}>{l.nombre}</option>
+              ))}
+            </select>
+
+            {lugarSeleccionado && (
+              <div style={{ marginTop: 20 }}>
+                {LUGARES_TLAXCALA.filter(l => l.id === lugarSeleccionado).map(l => (
+                  <div key={l.id}>
+                    <p><strong>IP:</strong> {l.ip}</p>
+                    <p><strong>Motor:</strong> {l.motor}</p>
+                 
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button className="btn-secondary" onClick={() => setActiveView('dashboard')}>← Volver</button>
+          </div>
+        )}
+
+        {/* ===================== OCR ===================== */}
+        {activeView === 'ocrAdmin' && (
+          <div className="permisos-view">
+            <h2>OCR</h2>
+
+            <label className="btn-primary">
+              Seleccionar imagen
+              <input type="file" accept="image/*" hidden onChange={e => setOcrImage(e.target.files[0])} />
+            </label>
+
+            {ocrImage && <p>Imagen cargada: {ocrImage.name}</p>}
+            {loading && <p>Procesando OCR…</p>}
+
+            <button className="btn-primary" onClick={() => fakeLoad()}>Procesar</button>
+            <button className="btn-secondary" onClick={() => setActiveView('dashboard')}>← Volver</button>
+          </div>
+        )}
+
+        {/* ===================== MATRÍCULAS ===================== */}
+        {activeView === 'matriculasAdmin' && (
+          <div className="permisos-view">
+            <h2>Matrículas</h2>
+            <input type="text" placeholder="AAA-0000" />
+            <button className="btn-primary" onClick={() => fakeLoad()}>Buscar</button>
+            {loading && <p>Consultando servidor…</p>}
+         
+            <button className="btn-secondary" onClick={() => setActiveView('dashboard')}>← Volver</button>
+          </div>
         )}
 
         {/* -------- PERMISOS / USUARIOS -------- */}
