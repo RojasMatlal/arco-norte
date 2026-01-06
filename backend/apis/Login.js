@@ -1,9 +1,8 @@
+const express = require('express');
+const router = express.Router();
+
 const db = require('../config/database');
 const crypto = require('crypto');
-const router = express.Router();
-const express = require('express');
-
-
 
 // POST /api/login
 router.post('/', async (req, res) => {

@@ -42,4 +42,5 @@ console.log(` Roles: http://localhost:${PORT}/api/roles`);
 console.log(` Users: http://localhost:${PORT}/api/users`);
 console.log(` Health DB: http://localhost:${PORT}/config/health`);
 
-});
+}
+);

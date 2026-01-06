@@ -192,11 +192,19 @@ const handleEditarUsuario = (u) => {
 };
 
 const handleCambiarEstatus = async (u, nuevoEstatus) => {
-alert(`Aquí va el endpoint para cambiar estatus de ${u.id_usuario} a ${nuevoEstatus}`);
+  await fetch(`${API_BASE}/apis/users/${u.id_usuario}/status`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: nuevoEstatus }),
+  });
+  fetchUsuarios();
 };
 
 const handleEliminarUsuario = async (u) => {
-alert(`Aquí va el endpoint para eliminar usuario ${u.id_usuario}`);
+  if (!window.confirm(`¿Eliminar a ${u.nombre_usuario}?`)) return;
+
+  await fetch(`${API_BASE}/apis/users/${u.id_usuario}`, { method: "DELETE" });
+  fetchUsuarios();
 };
 
 // ===================== FOTO PERFIL (PLACEHOLDER) =====================
@@ -319,8 +327,8 @@ useEffect(() => {
 
           <div className="user-info">
             <span>
-              Bienvenido{' '}
-              <strong>
+              Bienvenido{' '} 
+                <strong>
                 {user.nombre} {user.apellidoPaterno || user.ap_paterno || ''}
               </strong>
             </span>
