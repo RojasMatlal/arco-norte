@@ -1,4 +1,4 @@
-// Importar módulo de base de datos
+// Importa módulo de base de datos
 const db = require('./config/database');
 const cors = require("cors");
 require("dotenv").config();
@@ -34,18 +34,10 @@ app.get('/config/health', async (req, res) => {
     res.status(500).json({ status: 'error', message: 'BD no disponible' });
   }});
 
-
-// app.listen(5000, () => console.log('Servidor en puerto 5000'));
-//  Arrancar servidor
+//  Arranca el servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  /*console.log(` Servidor de ArcoNorte corriendo en puerto: ${PORT}`);
-  console.log(` Frontend: http://localhost:${PORT}/api/login`);
-  console.log(` Backend: http://localhost:${PORT}`);
-  console.log(`  Health Check: http://localhost:${PORT}/config`);
-  console.log(`  Health Check: http://localhost:${PORT}/api/login`);*/
-
-  console.log(` Login: http://localhost:${PORT}/api/login`);
+console.log(` Login: http://localhost:${PORT}/api/login`);
 console.log(` Roles: http://localhost:${PORT}/api/roles`);
 console.log(` Users: http://localhost:${PORT}/api/users`);
 console.log(` Health DB: http://localhost:${PORT}/config/health`);

@@ -1,8 +1,7 @@
-// backend/apis/Login.js
-const express = require('express');
+const db = require('../config/database');
 const crypto = require('crypto');
 const router = express.Router();
-const db = require('../config/database');
+const express = require('express');
 
 
 
@@ -17,9 +16,7 @@ router.post('/', async (req, res) => {
         message: 'Faltan datos (email y/o contraseña)',
       });
     }
-
-    // Hasheamos la contraseña igual que en la BD (sha256 → hex)
-    const hashedPassword = crypto
+      const hashedPassword = crypto
       .createHash('sha256')
       .update(password)
       .digest('hex');
@@ -55,9 +52,7 @@ router.post('/', async (req, res) => {
     }
 
     const user = rows[0];
-
-    // Aquí podrías generar un JWT si quieres, por ahora devolvemos los datos
-    return res.json({
+      return res.json({
       success: true,
       message: 'Login exitoso',
       user: {

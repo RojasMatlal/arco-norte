@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
+import logoC5I from "./recurs/c5i.jpg";
 import './user_admin.css';
 
 /* ===================== DUMP LUGARES TLAXCALA ===================== */
@@ -38,6 +39,7 @@ function User_Admin() {
   const [totalUsuarios, setTotalUsuarios] = useState(0);
   const [ocrImage, setOcrImage] = useState(null);
   const [lugarSeleccionado, setLugarSeleccionado] = useState('');
+  const profileMenuRef = useRef(null);
   
   
   const [profileImage, setProfileImage] = useState(
@@ -45,7 +47,7 @@ function User_Admin() {
   );
 
 // ===================== PERMISOS / USUARIOS (ESTADOS) =====================
-const [permisosTab, setPermisosTab] = useState('registro'); // 'registro' | 'gestion'
+const [permisosTab, setPermisosTab] = useState('registro');
 const [editingUserId, setEditingUserId] = useState(null);
 
 const [formUsuario, setFormUsuario] = useState({
@@ -103,12 +105,11 @@ const limpiarFormulario = () => {
 const fetchUsuarios = async () => {
   setLoadingUsuarios(true);
   try {
-    const url = `${API_BASE}/apis/users`; // ✅ LISTADO, no /count
+    const url = `${API_BASE}/apis/users`;
     const res = await fetch(url);
     const data = await res.json();
 
-    // Esperado: { success: true, data: [...] }
-    if (res.ok && data?.success && Array.isArray(data.data)) {
+  if (res.ok && data?.success && Array.isArray(data.data)) {
       setListaUsuariosTabla(data.data);
     } else {
       setListaUsuariosTabla([]);
@@ -123,25 +124,21 @@ const fetchUsuarios = async () => {
 };
 
 
-// Cuando entres a la pestaña "gestion", carga tabla
+// Carga de gestion/carga tabla en permisos 
 useEffect(() => {
   if (activeView === 'permisos' && permisosTab === 'gestion') {
     fetchUsuarios();
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [activeView, permisosTab]);
+  }}, [activeView, permisosTab]);
 
 // ===================== CRUD (BASE) =====================
-// OJO: aquí uso POST /apis/users para registrar.
-// Si aún no tienes endpoint PUT/PATCH/DELETE, dejo placeholders para que compile.
+
 const handleRegistrarOActualizar = async (e) => {
-  setPermisosTab('gestion');   // ✅ Cambia a la pestaña de tabla
-await fetchUsuarios();       // ✅ Recarga la lista
+  setPermisosTab('gestion');   
+await fetchUsuarios();     
   e.preventDefault();
 
   try {
-    // ✅ Registrar (POST). Si estás editando y aún no tienes endpoint update, por ahora solo registrar.
-    const url = `${API_BASE}/apis/users`;
+  const url = `${API_BASE}/apis/users`;
 
     const payload = {
       nombre: formUsuario.nombre,
@@ -169,13 +166,9 @@ await fetchUsuarios();       // ✅ Recarga la lista
 
     alert(editingUserId ? 'Guardado (modo básico)' : 'Usuario registrado');
 
-    limpiarFormulario();
-
-    // refresca tabla y contador
+  limpiarFormulario();
     await fetchUsuarios();
-    // el contador se actualiza por el polling cada 3s, pero si quieres inmediato:
-    // setTimeout(() => window.dispatchEvent(new Event('forceCount')), 0);
-  } catch (err) {
+} catch (err) {
     alert('Error al guardar usuario');
   }
 };
@@ -193,19 +186,17 @@ const handleEditarUsuario = (u) => {
     area: u.area_usuario || '',
     id_rol: String(u.id_rol ?? ''),
     email: u.email_usuario || '',
-    password: '', // no rellenar password
+    password: '',
     imagenFile: null,
   }));
 };
 
 const handleCambiarEstatus = async (u, nuevoEstatus) => {
-  // Placeholder para que compile: si luego haces endpoint real, lo conectas.
-  alert(`Aquí va el endpoint para cambiar estatus de ${u.id_usuario} a ${nuevoEstatus}`);
+alert(`Aquí va el endpoint para cambiar estatus de ${u.id_usuario} a ${nuevoEstatus}`);
 };
 
 const handleEliminarUsuario = async (u) => {
-  // Placeholder para que compile: si luego haces endpoint real, lo conectas.
-  alert(`Aquí va el endpoint para eliminar usuario ${u.id_usuario}`);
+alert(`Aquí va el endpoint para eliminar usuario ${u.id_usuario}`);
 };
 
 // ===================== FOTO PERFIL (PLACEHOLDER) =====================
@@ -266,6 +257,26 @@ useEffect(() => {
   setProfileImage(u?.imagen || u?.imagen_usuario || null);
 }, []);
 
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (
+      profileMenuRef.current &&
+      !profileMenuRef.current.contains(event.target)
+    ) {
+      setMenuOpen(false);
+    }
+  };
+
+  if (menuOpen) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [menuOpen]);
+
+
   if (!user) {
     return (
       <div className="loading-container">
@@ -301,7 +312,10 @@ useEffect(() => {
       {/* ===== HEADER ===== */}
       <header className="dashboard-header">
         <div className="header-content">
+          <div className="header-title-group">
+            <img src={logoC5I} alt="C5I" className="header-logo"/>
           <h1>Panel de Administración</h1>
+          </div>
 
           <div className="user-info">
             <span>
@@ -311,7 +325,7 @@ useEffect(() => {
               </strong>
             </span>
 
-            <div className="profile-menu-container">
+            <div className="profile-menu-container" ref={profileMenuRef}>
               <button
                 type="button"
                 className="header-avatar-button"
@@ -332,11 +346,21 @@ useEffect(() => {
                   </div>
 
                   <button
-                    className="profile-dropdown-item logout"
-                    onClick={handleLogout}
+                    className="btn-secondary"
+                    onClick={() => setActiveView('perfil')}
+                     onDoubleClick={() => setActiveView('dashboard')}
                   >
+                    Perfil del Usuario
+                  </button>
+
+                  <p>
+                  <button
+                    className="btn-secondary"
+                    onClick={handleLogout}
+                    >
                     Cerrar sesión
                   </button>
+                    </p>
                 </div>
               )}
             </div>
@@ -732,7 +756,7 @@ useEffect(() => {
           </div>
         )}
 
-        {/* -------- PERFIL (DATOS DESDE BD) -------- */}
+        {/* -------- PERFIL -------- */}
         {activeView === 'perfil' && (
           <div className="perfil-instagram">
             <div className="perfil-header">
@@ -741,7 +765,7 @@ useEffect(() => {
                 className="btn-secondary"
                 onClick={() => setActiveView('dashboard')}
               >
-                ← Volver al panel
+                ← Volver
               </button>
             </div>
 
@@ -820,11 +844,7 @@ useEffect(() => {
                             ? 'Habilitado'
                             : 'Deshabilitado'}
                         </p>
-                        <p>
-                          <strong>Avatar BD:</strong>{' '}
-                          {u.imagen_usuario || 'Sin avatar registrado'}
-                        </p>
-                      </div>
+                     </div>
                     </div>
                   </>
                 );
@@ -847,35 +867,7 @@ useEffect(() => {
             <p>Vista de historial en construcción…</p>
           </div>
         )}
-
-        {/* ===== PERFIL ===== */}
-        {activeView === 'perfil' && (
-          <div className="perfil-instagram">
-            <div className="perfil-header">
-              <h2>Perfil del usuario</h2>
-              <button
-                className="btn-secondary"
-                onClick={() => setActiveView('dashboard')}
-              >
-                ← Volver
-              </button>
-            </div>
-
-            <div className="perfil-detail-card">
-              <h3>Información de la cuenta</h3>
-              <div className="perfil-detail-grid">
-                <p><strong>Nombre:</strong> {user.nombre}</p>
-                <p><strong>Apellido Paterno:</strong> {user.apellidoPaterno}</p>
-                <p><strong>Apellido Materno:</strong> {user.apellidoMaterno}</p>
-                <p><strong>Sexo:</strong> {user.sexo}</p>
-                <p><strong>Email:</strong> {user.email}</p>
-                <p><strong>Rol:</strong> {user.rol}</p>
-                <p><strong>Área:</strong> {user.area}</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+     </div>
     </div>
   );
 }

@@ -1,12 +1,10 @@
 // backend/apis/Users.js
 const express = require('express');
 const crypto = require('crypto');
+const db = require('../config/database');
 const router = express.Router();
 
-// ✅ desde /backend/apis -> /backend/config
-const db = require('../config/database');
-
-// ✅ GET: listar usuarios (tabla real: usuarios)
+// GET: lista de usuarios
 router.get('/', async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -38,7 +36,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ✅ POST: registrar usuario (hash sha256 como en Login.js)
+// POST: registra los usuarios 
 router.post('/', async (req, res) => {
   try {
     const {
@@ -50,7 +48,7 @@ router.post('/', async (req, res) => {
       id_rol,
       email,
       password,
-      imagen, // opcional (url)
+      imagen, 
     } = req.body;
 
     if (!nombre || !apellidoPaterno || !area || !id_rol || !email || !password) {
@@ -65,7 +63,7 @@ router.post('/', async (req, res) => {
       .update(String(password))
       .digest('hex');
 
-    // ✅ tabla real: usuarios (según Login.js)
+    // tabla de usuarios
     await db.query(
       `
       INSERT INTO usuarios
@@ -96,7 +94,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ✅ contador (TIEMPO REAL) - tabla real: usuarios
+//contador en tiempo real
 router.get('/count', async (req, res) => {
   try {
     const [rows] = await db.query('SELECT COUNT(*) AS total FROM usuarios');

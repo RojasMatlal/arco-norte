@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
+import logoC5I from "./recurs/c5i.jpg";
 import './user_oper.css';
 
 /* ===================== DUMP LUGARES TLAXCALA ===================== */
@@ -35,11 +36,49 @@ function User_Oper() {
   const [loading, setLoading] = useState(false);
   const [ocrImage, setOcrImage] = useState(null);
   const [lugarSeleccionado, setLugarSeleccionado] = useState('');
+  const profileMenuRef = useRef(null);
+
+  // ===================== PERFIL (PLACEHOLDER) =====================
+  const [perfilDB, setPerfilDB] = useState(null);
+  const [loadingPerfil, setLoadingPerfil] = useState(false);
+  
+  const renderSexo = (sexo) => {
+    if (sexo === 1 || sexo === '1') return 'Femenino';
+    if (sexo === 2 || sexo === '2') return 'Masculino';
+    return 'No especificado';
+  };
+  
+   const [profileImage, setProfileImage] = useState(
+      user?.imagen || user?.imagen_usuario || null
+    );
+    const handleChangePhoto = () => {
+  alert('Aquí conectas la subida/cambio de foto si luego agregas endpoint');
+};
 
   /* ===================== AUTH ===================== */
   useEffect(() => {
     if (!user) navigate('/login', { replace: true });
   }, [navigate, user]);
+
+  useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (
+      profileMenuRef.current &&
+      !profileMenuRef.current.contains(event.target)
+    ) {
+      setMenuOpen(false);
+    }
+  };
+
+  if (menuOpen) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [menuOpen]);
+
 
   const getInitials = () => {
     const n = `${user?.nombre || ''} ${user?.apellidoPaterno || ''}`.trim();
@@ -66,14 +105,16 @@ function User_Oper() {
       {/* ===== HEADER ===== */}
       <header className="dashboard-header">
         <div className="header-content">
-          <h1>Panel de Administración</h1>
-
+          <div className="header-title-group">
+                      <img src={logoC5I} alt="C5I" className="header-logo"/>
+                    <h1>Panel de Operaciones</h1>
+                    </div>
           <div className="user-info">
             <span>
               Bienvenido <strong>{user?.nombre}</strong>
             </span>
 
-            <div className="profile-menu-container">
+            <div className="profile-menu-container" ref={profileMenuRef}>
               <button
                 className="header-avatar-button"
                 onClick={() => setMenuOpen(!menuOpen)}
@@ -89,11 +130,21 @@ function User_Oper() {
                   </div>
 
                   <button
-                    className="profile-dropdown-item logout"
-                    onClick={handleLogout}
+                    className="btn-secondary"
+                    onClick={() => setActiveView('perfil')}
+                    onDoubleClick={() => setActiveView('dashboard')}
                   >
+                    Perfil del Usuario
+                  </button>
+
+                  <p>
+                  <button
+                    className="btn-secondary"
+                    onClick={handleLogout}
+                    >
                     Cerrar sesión
                   </button>
+                    </p>
                 </div>
               )}
             </div>
@@ -217,6 +268,103 @@ function User_Oper() {
             {loading && <p>Consultando servidor…</p>}
          
             <button className="btn-secondary" onClick={() => setActiveView('dashboard')}>← Volver</button>
+          </div>
+        )}
+
+                {/* -------- PERFIL -------- */}
+        {activeView === 'perfil' && (
+          <div className="perfil-instagram">
+            <div className="perfil-header">
+              <h2>Perfil del usuario</h2>
+              <button
+                className="btn-secondary"
+                onClick={() => setActiveView('dashboard')}
+              >
+                ← Volver
+              </button>
+            </div>
+
+            {loadingPerfil ? (
+              <p>Cargando datos del usuario...</p>
+            ) : (
+              (() => {
+                const u = perfilDB || {};
+                const username =
+                  u.usuario ||
+                  (u.email_usuario
+                    ? u.email_usuario.split('@')[0]
+                    : user.email.split('@')[0]);
+
+                return (
+                  <>
+                    <div className="perfil-hero">
+                      <div className="perfil-photo-large">
+                        {profileImage ? (
+                          <img src={profileImage} alt="Avatar" />
+                        ) : (
+                          <span>
+                            {(user.nombre?.[0] || 'U').toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="perfil-main-info">
+                        <div className="perfil-username-row">
+                          <h2 className="perfil-username">{username}</h2>
+                        </div>
+
+                        <span className="perfil-fullname">
+                          {u.nombre_usuario} {u.ap_usuario} {u.am_usuario}
+                        </span>
+
+                        <div className="perfil-buttons-row">
+                          <label className="btn-primary perfil-change-photo">
+                            Cambiar foto
+                            <input
+                              type="file"
+                              accept="image/*"
+                              style={{ display: 'none' }}
+                              onChange={handleChangePhoto}
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="perfil-detail-card">
+                      <h3>Información de la cuenta</h3>
+                      <div className="perfil-detail-grid">
+                        <p>
+                          <strong>ID usuario:</strong> {u.id_usuario}
+                        </p>
+                        <p>
+                          <strong>Nombre completo:</strong>{' '}
+                          {u.nombre_usuario} {u.ap_usuario} {u.am_usuario}
+                        </p>
+                        <p>
+                          <strong>Sexo:</strong> {renderSexo(u.sexo_usuario)}
+                        </p>
+                        <p>
+                          <strong>Usuario (correo):</strong> {u.email_usuario}
+                        </p>
+                        <p>
+                          <strong>Área:</strong> {u.area_usuario}
+                        </p>
+                        <p>
+                          <strong>Rol:</strong> {u.nombre_rol || user.rol}
+                        </p>
+                        <p>
+                          <strong>Estatus:</strong>{' '}
+                          {u.estatus_usuario === 1
+                            ? 'Habilitado'
+                            : 'Deshabilitado'}
+                        </p>
+                     </div>
+                    </div>
+                  </>
+                );
+              })()
+            )}
           </div>
         )}
 

@@ -88,8 +88,7 @@ function Login({ title = 'Iniciar sesión', subtitle = null, subtext = null }) {
     setMsgType('');
 
     try {
-      const result = await AuthService.login(form.email, form.password);
-
+    const result = await AuthService.login(form.email, form.password);
       if (!result?.success) {
         const { type, text } = classifyError(result?.message);
         setAlert(type, text);
@@ -102,7 +101,7 @@ function Login({ title = 'Iniciar sesión', subtitle = null, subtext = null }) {
         return;
       }
 
-      // ✅ success
+      //  success
       
       setAlert("success", `Bienvenido ${savedUser?.nombre || ""} (${savedUser?.rol || "usuario"})`);
 
@@ -130,15 +129,13 @@ function Login({ title = 'Iniciar sesión', subtitle = null, subtext = null }) {
 
   return (
     <div className="login-page">
-      {/* Fondo/Logo si ya lo manejas por CSS */}
-      <div className="background-logo" />
+    <div className="background-logo" />
 
       <div className="login-container">
         <form className="login-form" onSubmit={handleSubmit}>
           {/* ===== LogoC5i ===== */}
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-            {/* OPCIÓN A: logo importado */}
-            {<img
+          {<img
               src={c5iImg}
               alt="c5i"
               style={{ height: 72, objectFit: 'contain' }}
