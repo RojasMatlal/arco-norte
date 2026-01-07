@@ -6,6 +6,7 @@ const express = require("express");
 const mysql = require('mysql2/promise');
 
 const app = express();
+const path = require('path');
 
 // Middlewares
 app.use(cors());
@@ -20,8 +21,10 @@ const usersRoutes = require('./apis/Users');
 app.use('/api/login', loginRoutes);
 app.use('/api/roles', rolesRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => res.send('Backend funcionando!'));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Endpoint de healthcheck para probar conexión a la BD
 app.get('/config/health', async (req, res) => {
@@ -33,6 +36,8 @@ app.get('/config/health', async (req, res) => {
     console.error('Error en health DB:', err);
     res.status(500).json({ status: 'error', message: 'BD no disponible' });
   }});
+
+
 
 //  Arranca el servidor
 const PORT = process.env.PORT || 5000;

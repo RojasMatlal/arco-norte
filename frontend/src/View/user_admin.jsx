@@ -30,9 +30,11 @@ function User_Admin() {
   const navigate = useNavigate();
   const user = AuthService.getUser();
 
-  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const API_ROOT = (process.env.REACT_APP_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
 
   // ESTADOS 
+
   const [loading, setLoading] = useState(false);
   const [activeView, setActiveView] = useState('dashboard');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -102,76 +104,135 @@ const limpiarFormulario = () => {
 };
 
 // ===================== CARGAR USUARIOS (para pestaña Gestión) =====================
-const fetchUsuarios = async () => {
-  setLoadingUsuarios(true);
-  try {
-    const url = `${API_BASE}/apis/users`;
-    const res = await fetch(url);
-    const data = await res.json();
 
-  if (res.ok && data?.success && Array.isArray(data.data)) {
-      setListaUsuariosTabla(data.data);
-    } else {
-      setListaUsuariosTabla([]);
-      console.warn("Respuesta inesperada:", data);
+// Carga de gestion/carga tabla en permisos 
+useEffect(() => {
+  if (activeView !== "permisos" || permisosTab !== "gestion") {
+    refreshUsuarios();
+  }
+
+}, [activeView, permisosTab]);
+
+
+const refreshCount = async () => {
+  try {
+    const res = await fetch(`${API}/users/count`);
+    const data = await res.json();
+    if (res.ok && data?.success) {
+      setTotalUsuarios(Number(data.total || 0));
     }
   } catch (e) {
-    console.error("Error fetchUsuarios:", e);
+    // no rompas UI
+  }
+};
+
+const refreshUsuarios = async () => {
+  setLoadingUsuarios(true);
+  try {
+    const [resList, resCount] = await Promise.all([
+      fetch(`${API}/users`),
+      fetch(`${API}/users/count`),
+    ]);
+
+    const list = await resList.json();
+    const count = await resCount.json();
+
+    if (resList.ok && list?.success && Array.isArray(list.data)) {
+      setListaUsuariosTabla(list.data);
+    } else {
+      setListaUsuariosTabla([]);
+    }
+
+    if (resCount.ok && count?.success) {
+      setTotalUsuarios(Number(count.total || 0));
+    }
+  } catch (e) {
+    console.error(e);
     setListaUsuariosTabla([]);
+    setTotalUsuarios(0);
   } finally {
     setLoadingUsuarios(false);
   }
 };
 
-
-// Carga de gestion/carga tabla en permisos 
-useEffect(() => {
-  if (activeView === 'permisos' && permisosTab === 'gestion') {
-    fetchUsuarios();
-  }}, [activeView, permisosTab]);
-
-// ===================== CRUD (BASE) =====================
+// ===================== CRUD =====================
 
 const handleRegistrarOActualizar = async (e) => {
-  setPermisosTab('gestion');   
-await fetchUsuarios();     
-  e.preventDefault();
+ e.preventDefault();
+
+  const required = [
+    ["nombre", formUsuario.nombre],
+    ["apellidoPaterno", formUsuario.apellidoPaterno],
+    ["apellidoMaterno", formUsuario.apellidoMaterno],
+    ["area", formUsuario.area],
+    ["id_rol", formUsuario.id_rol],
+    ["email", formUsuario.email],
+    ...(editingUserId ? [] : [["pasword",formUsuario.password]]),
+  ];
+
+  const missing = required.find(([, v]) => !String(v || "").trim());
+  if (missing) {
+    alert(`Falta el campo obligatorio: ${missing[0]}`);
+    return;
+  }
+
+  const payload = {
+    nombre: formUsuario.nombre.trim(),
+    apellidoPaterno: formUsuario.apellidoPaterno.trim(),
+    apellidoMaterno: (formUsuario.apellidoMaterno || "").trim(),
+    sexo: Number(formUsuario.sexo || 0),   
+    area: formUsuario.area.trim(),
+    id_rol: Number(formUsuario.id_rol),    
+    email: formUsuario.email.trim(),
+    ...(formUsuario.password?.trim() ? { password: String(formUsuario.password) } : {}),
+    imagen: null, 
+  };
 
   try {
-  const url = `${API_BASE}/apis/users`;
+    const isEdit = Boolean(editingUserId);
+const url = isEdit ? `${API}/users/${editingUserId}` : `${API}/users`;
+const method = isEdit ? "PUT" : "POST";
 
-    const payload = {
-      nombre: formUsuario.nombre,
-      apellidoPaterno: formUsuario.apellidoPaterno,
-      apellidoMaterno: formUsuario.apellidoMaterno,
-      sexo: formUsuario.sexo,
-      area: formUsuario.area,
-      id_rol: formUsuario.id_rol,
-      email: formUsuario.email,
-      password: formUsuario.password,
-    };
+const res = await fetch(url, {
+  method,
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(payload),
     });
 
-    const data = await res.json();
+    const raw = await res.text();
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      data = { success: false, message: raw };
+    }
 
     if (!res.ok || !data?.success) {
-      alert(data?.message || 'No se pudo guardar el usuario');
+      console.error("POST /api/users ->", res.status, data);
+      const msg =
+        data?.message ||
+        data?.debug ||
+        `Error HTTP ${res.status} en /api/users`;
+      alert(msg);
       return;
     }
 
-    alert(editingUserId ? 'Guardado (modo básico)' : 'Usuario registrado');
+    alert(editingUserId ? "Usuario actualizado correctamente" : "Usuario registrado correctamente");
 
-  limpiarFormulario();
-    await fetchUsuarios();
-} catch (err) {
-    alert('Error al guardar usuario');
+    limpiarFormulario();
+    setPermisosTab("gestion");
+    await refreshUsuarios();
+  } catch (err) {
+    console.error("Error fetch POST /api/users:", err);
+    alert(`No se pudo registrar (conexión/back): ${err?.message || err}`);
   }
 };
+
+
+
 
 const handleEditarUsuario = (u) => {
   setPermisosTab('registro');
@@ -192,58 +253,98 @@ const handleEditarUsuario = (u) => {
 };
 
 const handleCambiarEstatus = async (u, nuevoEstatus) => {
-  await fetch(`${API_BASE}/apis/users/${u.id_usuario}/status`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status: nuevoEstatus }),
-  });
-  fetchUsuarios();
+  try {
+    const res = await fetch(`${API}/users/${u.id_usuario}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: nuevoEstatus }),
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data?.success) {
+      alert(data?.message || 'No se pudo cambiar el estatus');
+      return;
+    }
+
+    await refreshUsuarios();
+  } catch (e) {
+    console.error(e);
+    alert('Error al cambiar estatus');
+  }
 };
+
 
 const handleEliminarUsuario = async (u) => {
-  if (!window.confirm(`¿Eliminar a ${u.nombre_usuario}?`)) return;
+  if (!window.confirm(`¿Eliminar al usuario ${u.nombre_usuario} ${u.ap_usuario}?`)) return;
 
-  await fetch(`${API_BASE}/apis/users/${u.id_usuario}`, { method: "DELETE" });
-  fetchUsuarios();
+  try {
+    const res = await fetch(`${API}/users/${u.id_usuario}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data?.success) {
+      alert(data?.message || 'No se pudo eliminar');
+      return;
+    }
+
+    await refreshUsuarios();
+  } catch (e) {
+    console.error(e);
+    alert('Error al eliminar usuario');
+  }
 };
+
 
 // ===================== FOTO PERFIL (PLACEHOLDER) =====================
-const handleChangePhoto = () => {
-  alert('Aquí conectas la subida/cambio de foto si luego agregas endpoint');
+const handleChangePhoto = async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  try {
+    const form = new FormData();
+    form.append('avatar', file);
+
+    const res = await fetch(`${API}/users/${user.id_usuario}/avatar`, {
+      method: 'PUT',
+      body: form,
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data?.success) {
+      alert(data?.message || 'No se pudo subir la foto');
+      return;
+    }
+
+    // muestra la foto nueva (URL completa)
+    setProfileImage(`${API}${data.path}`);
+  } catch (err) {
+    console.error(err);
+    alert('Error al subir foto');
+  } finally {
+    e.target.value = '';
+  }
 };
+
   
   //contador en tiempo real
 useEffect(() => {
   let alive = true;
 
-  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
-  const fetchCount = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/apis/users/count`);
-      const data = await res.json();
-
-      if (!alive) return;
-
-      if (res.ok && data?.success) {
-        setTotalUsuarios(Number(data.total || 0));
-      } else {
-        setTotalUsuarios(0);
-      }
-    } catch (e) {
-      if (!alive) return;
-      setTotalUsuarios(0);
-    }
+  const tick = async () => {
+    if (!alive) return;
+    await refreshCount();
   };
 
-  fetchCount();
-  const interval = setInterval(fetchCount, 3000);
+  tick();
+  const interval = setInterval(tick, 3000);
 
   return () => {
     alive = false;
     clearInterval(interval);
   };
 }, []);
+
 
   // AUTH + ROLE GUARD
   useEffect(() => {
@@ -689,14 +790,13 @@ useEffect(() => {
             {permisosTab === 'gestion' && (
               <div className="usuarios-tabla-wrapper">
                 <h3>Usuarios registrados</h3>
-                {loadingUsuarios ? (
-                  <p>Cargando usuarios...</p>
-                ) : (
+                {loadingUsuarios && <p style={{ margin: "8px 0", opacity: 0.75 }}>Actualizando…</p>}
                   <table className="usuarios-tabla">
                     <thead>
                       <tr>
                         <th>ID</th>
                         <th>Nombre</th>
+                        <th>Sexo</th>
                         <th>Usuario</th>
                         <th>Área</th>
                         <th>Rol</th>
@@ -709,8 +809,9 @@ useEffect(() => {
                         <tr key={u.id_usuario}>
                           <td>{u.id_usuario}</td>
                           <td>
-                            {u.nombre_usuario} {u.ap_usuario}
+                            {u.nombre_usuario} {u.ap_usuario} {u.am_usuario}
                           </td>
+                          <td> {u.sexo_usuario === 1 ? "Masculino" : u.sexo_usuario === 2 ? "Femenino" : "No especificado"}</td>
                           <td>{u.email_usuario}</td>
                           <td>{u.area_usuario}</td>
                           <td>{u.nombre_rol}</td>
@@ -758,7 +859,6 @@ useEffect(() => {
                       )}
                     </tbody>
                   </table>
-                )}
               </div>
             )}
           </div>
@@ -861,6 +961,7 @@ useEffect(() => {
           </div>
         )}
 
+        {/* -------- Historial -------- */}
         {activeView === 'historial' && (
           <div className="historial-view">
             <div className="perfil-header">

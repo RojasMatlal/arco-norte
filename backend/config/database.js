@@ -35,7 +35,7 @@ async function testConnection() {
         console.log(`  Versión MySQL: ${result[0].version}`);
     } 
     catch (error) {
-        console.error(' Error al conectar a la BD:', err.message);
+        console.error(' Error al conectar a la BD:', error.message);
         console.log('\n Posibles soluciones:');
         console.log('1. Verifica que MySQL esté instalado y corriendo');
         console.log('2. Comandos para Windows con XAMPP:');
@@ -58,8 +58,7 @@ async function testConnection() {
   
 }
 
-// testConnection();
-// Ejecutar la prueba
+// testea la conexión y ejecuta la prueba
 testConnection().then(() => {
   console.log('\n Prueba completada');
 });
