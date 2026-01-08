@@ -38,6 +38,8 @@ const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
   const [loading, setLoading] = useState(false);
   const [activeView, setActiveView] = useState('dashboard');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [perfilUsuario, setPerfilUsuario] = useState(null);
+
   const [totalUsuarios, setTotalUsuarios] = useState(0);
   const [ocrImage, setOcrImage] = useState(null);
   const [lugarSeleccionado, setLugarSeleccionado] = useState('');
@@ -83,6 +85,8 @@ const handleFormChange = (e) => {
   setFormUsuario((prev) => ({ ...prev, [name]: value }));
 };
 
+const sexoLabel = (s) => (Number(s) === 1 ? "Masculino" : Number(s) === 2 ? "Femenino" : "No especificado");
+
 const handleAvatarFile = (e) => {
   const file = e.target.files?.[0] || null;
   setFormUsuario((prev) => ({ ...prev, imagenFile: file }));
@@ -103,6 +107,27 @@ const limpiarFormulario = () => {
   });
 };
 
+const fetchPerfil = async () => {
+  try {
+    const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
+    const id = userLocal.id_usuario;
+
+    if (!id) return;
+
+    const res = await fetch(`${API}/users/${id}`);
+    const json = await res.json();
+
+    if (res.ok && json?.success) {
+      setPerfilUsuario(json.data); 
+    } else {
+      console.warn(json);
+    }
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+
 // ===================== CARGAR USUARIOS (para pestaña Gestión) =====================
 
 // Carga de gestion/carga tabla en permisos 
@@ -112,6 +137,13 @@ useEffect(() => {
   }
 
 }, [activeView, permisosTab]);
+
+useEffect(() => {
+  if (activeView === "perfil") {
+    fetchPerfil();
+  }
+}, [activeView]);
+
 
 
 const refreshCount = async () => {
@@ -935,7 +967,7 @@ useEffect(() => {
                           {u.nombre_usuario} {u.ap_usuario} {u.am_usuario}
                         </p>
                         <p>
-                          <strong>Sexo:</strong> {renderSexo(u.sexo_usuario)}
+                          <strong>Sexo:</strong> {sexoLabel(perfilUsuario?.sexo_usuario)}
                         </p>
                         <p>
                           <strong>Usuario (correo):</strong> {u.email_usuario}

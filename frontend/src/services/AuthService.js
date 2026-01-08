@@ -1,12 +1,13 @@
 import axios from "axios";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+const API_ROOT = (process.env.REACT_APP_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
 
 export const AuthService = {
   async login(email, password) {
     try {
       const res = await axios.post(
-        `${API_BASE_URL}/login`,
+        `${API}/login`,
         { email, password },
         { timeout: 10000 }
       );
@@ -14,7 +15,7 @@ export const AuthService = {
       const data = res.data;
       if (!data?.success) return data;
 
-      // Normaliza user para ProtectedRoute + vistas
+      // Normaliza user para ProtectedRoute/vistas
       if (data.user) {
         const u = data.user;
         const normalized = {
@@ -42,7 +43,7 @@ export const AuthService = {
 
       return {
         success: false,
-        message: `Sin respuesta del servidor (CORS/URL). API_BASE_URL=${API_BASE_URL}`,
+        message: `Sin respuesta del servidor (CORS/URL). API_BASE_URL=${API}`,
       };
     }
   },
