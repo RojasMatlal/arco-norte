@@ -2,6 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import logoC5I from "./recurs/c5i.jpg";
+import eyeOn from "./recurs/icons-visible.png";
+import eyeOff from "./recurs/icons-ciego.png";
+
 import './user_admin.css';
 
 /* ===================== DUMP LUGARES TLAXCALA ===================== */
@@ -53,6 +56,8 @@ const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
 // ===================== PERMISOS / USUARIOS (ESTADOS) =====================
 const [permisosTab, setPermisosTab] = useState('registro');
 const [editingUserId, setEditingUserId] = useState(null);
+const [showPassword, setShowPassword] = useState(false);
+
 
 const [formUsuario, setFormUsuario] = useState({
   nombre: '',
@@ -70,7 +75,6 @@ const [loadingUsuarios, setLoadingUsuarios] = useState(false);
 const [listaUsuariosTabla, setListaUsuariosTabla] = useState([]);
 
 // ===================== PERFIL (PLACEHOLDER) =====================
-const [perfilDB, setPerfilDB] = useState(null);
 const [loadingPerfil, setLoadingPerfil] = useState(false);
 
 const renderSexo = (sexo) => {
@@ -109,23 +113,31 @@ const limpiarFormulario = () => {
 
 const fetchPerfil = async () => {
   try {
-    const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
-    const id = userLocal.id_usuario;
+    setLoadingPerfil(true);
 
-    if (!id) return;
+    const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
+    const id = userLocal?.id_usuario;
+
+    if (!id) {
+      setLoadingPerfil(false);
+      return;
+    }
 
     const res = await fetch(`${API}/users/${id}`);
     const json = await res.json();
 
     if (res.ok && json?.success) {
-      setPerfilUsuario(json.data); 
+      setPerfilUsuario(json.data);  
     } else {
-      console.warn(json);
+      console.warn("Perfil error:", json);
     }
   } catch (e) {
-    console.error(e);
+    console.error("Error fetchPerfil:", e);
+  } finally {
+    setLoadingPerfil(false);
   }
 };
+
 
 
 // ===================== CARGAR USUARIOS (para pestaña Gestión) =====================
@@ -645,7 +657,7 @@ useEffect(() => {
 
         {/* -------- PERMISOS / USUARIOS -------- */}
         {activeView === 'permisos' && (
-          <div className="permisos-view">
+          <div className="permisos-card">
             <div className="permisos-header">
               <h2>Gestión de usuarios y permisos</h2>
               <button
@@ -768,17 +780,26 @@ useEffect(() => {
 
                   <div className="form-row">
                     <label>
-                      Contraseña{' '}
-                      {editingUserId
+                      Contraseña{editingUserId
                         ? '(dejar en blanco para no cambiar)'
                         : '*'}
                     </label>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formUsuario.password}
-                      onChange={handleFormChange}
-                    />
+
+                     <div className="password-container">
+                       <input
+                       className="form-input password-input"
+                       type={showPassword ? "text" : "password"}
+                       name="password"
+                       value={formUsuario.password}
+                       onChange={handleFormChange}
+                       placeholder="Contraseña"
+                        />
+                          <img src={showPassword ? eyeOff :eyeOn} 
+                          className="password-eye"
+                          onClick={() => setShowPassword(!showPassword)}
+                          alt="toggle" 
+                          />
+                     </div>
                   </div>
 
                   {/* FOTO OPCIONAL */}
@@ -820,7 +841,7 @@ useEffect(() => {
             )}
 
             {permisosTab === 'gestion' && (
-              <div className="usuarios-tabla-wrapper">
+              <div className="usuarios-table-wrapper">
                 <h3>Usuarios registrados</h3>
                 {loadingUsuarios && <p style={{ margin: "8px 0", opacity: 0.75 }}>Actualizando…</p>}
                   <table className="usuarios-tabla">
@@ -840,26 +861,29 @@ useEffect(() => {
                       {listaUsuariosTabla.map((u) => (
                         <tr key={u.id_usuario}>
                           <td>{u.id_usuario}</td>
-                          <td>
+                          <td className="col-nombre">
                             {u.nombre_usuario} {u.ap_usuario} {u.am_usuario}
                           </td>
                           <td> {u.sexo_usuario === 1 ? "Masculino" : u.sexo_usuario === 2 ? "Femenino" : "No especificado"}</td>
                           <td>{u.email_usuario}</td>
                           <td>{u.area_usuario}</td>
                           <td>{u.nombre_rol}</td>
-                          <td>
+                          <td >
                             {u.estatus_usuario === 1
                               ? 'Habilitado'
                               : 'Deshabilitado'}
                           </td>
-                          <td>
+
+                          <td className="actions-cell">
+                            <div className="actions-wrap">
                             <button
                               type="button"
                               className="btn-small"
                               onClick={() => handleEditarUsuario(u)}
-                            >
+                              >
                               Editar
                             </button>
+
                             <button
                               type="button"
                               className="btn-small"
@@ -874,6 +898,7 @@ useEffect(() => {
                                 ? 'Deshabilitar'
                                 : 'Habilitar'}
                             </button>
+
                             <button
                               type="button"
                               className="btn-small danger"
@@ -881,6 +906,7 @@ useEffect(() => {
                             >
                               Eliminar
                             </button>
+                             </div>
                           </td>
                         </tr>
                       ))}
@@ -913,7 +939,7 @@ useEffect(() => {
               <p>Cargando datos del usuario...</p>
             ) : (
               (() => {
-                const u = perfilDB || {};
+                const u = perfilUsuario || {};
                 const username =
                   u.usuario ||
                   (u.email_usuario
@@ -967,10 +993,10 @@ useEffect(() => {
                           {u.nombre_usuario} {u.ap_usuario} {u.am_usuario}
                         </p>
                         <p>
-                          <strong>Sexo:</strong> {sexoLabel(perfilUsuario?.sexo_usuario)}
+                          <strong>Sexo:</strong> {sexoLabel(u?.sexo_usuario)}
                         </p>
                         <p>
-                          <strong>Usuario (correo):</strong> {u.email_usuario}
+                          <strong>Usuario :</strong> {u.email_usuario}
                         </p>
                         <p>
                           <strong>Área:</strong> {u.area_usuario}

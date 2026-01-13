@@ -305,12 +305,11 @@ router.delete('/:id', async (req, res) => {
 });
 
 // GET para traer el perfil por ID
+// GET /api/users/:idI
 router.get('/:id', async (req, res) => {
   try {
     const id = Number(req.params.id);
-    if (!Number.isFinite(id)) {
-      return res.status(400).json({ success: false, message: 'ID inválido' });
-    }
+    if (!Number.isFinite(id)) return res.status(400).json({ success:false, message:'ID inválido' });
 
     const [rows] = await db.query(`
       SELECT 
@@ -320,31 +319,24 @@ router.get('/:id', async (req, res) => {
         u.am_usuario,
         u.sexo_usuario,
         u.email_usuario,
-        u.imagen_usuario,
-        u.id_rol,
         u.area_usuario,
         u.estatus_usuario,
+        u.imagen_usuario,
         r.nombre_rol
       FROM usuarios u
-      INNER JOIN roles r ON u.id_rol = r.id_rol
+      JOIN roles r ON r.id_rol = u.id_rol
       WHERE u.id_usuario = ?
       LIMIT 1
     `, [id]);
 
-    if (rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
-    }
-
-    return res.json({ success: true, data: rows[0] });
-  } catch (err) {
-    console.error('Error GET /users/:id:', err);
-    return res.status(500).json({
-      success: false,
-      message: 'Error al obtener usuario',
-      debug: err?.sqlMessage || err?.message || String(err),
-    });
+    if (!rows.length) return res.status(404).json({ success:false, message:'Usuario no encontrado' });
+    res.json({ success:true, data: rows[0] });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success:false, message:'Error al obtener usuario', debug: e?.sqlMessage || e?.message });
   }
 });
+
 
 
 

@@ -30,6 +30,10 @@ function User_Oper() {
   const navigate = useNavigate();
   const user = AuthService.getUser();
 
+    const API_ROOT = (process.env.REACT_APP_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
+
+
   const [activeView, setActiveView] = useState('dashboard');
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -39,7 +43,7 @@ function User_Oper() {
   const profileMenuRef = useRef(null);
 
   // ===================== PERFIL (PLACEHOLDER) =====================
-  const [perfilDB, setPerfilDB] = useState(null);
+  const [perfilUsuario, setPerfilUsuario] = useState(null);
   const [loadingPerfil, setLoadingPerfil] = useState(false);
   
   const renderSexo = (sexo) => {
@@ -56,6 +60,12 @@ function User_Oper() {
 };
 
   /* ===================== AUTH ===================== */
+  useEffect(() => {
+  if (activeView === "perfil") {
+    fetchPerfil();
+  }
+}, [activeView]);
+
   useEffect(() => {
     if (!user) navigate('/login', { replace: true });
   }, [navigate, user]);
@@ -98,6 +108,36 @@ function User_Oper() {
       cb && cb();
     }, 1200);
   };
+
+  /*======== Perfil ==========*/
+
+  const fetchPerfil = async () => {
+  try {
+    setLoadingPerfil(true);
+
+    const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
+    const id = userLocal?.id_usuario;
+
+    if (!id) {
+      setLoadingPerfil(false);
+      return;
+    }
+
+    const res = await fetch(`${API}/users/${id}`);
+    const json = await res.json();
+
+    if (res.ok && json?.success) {
+      setPerfilUsuario(json.data);  // ✅ este será el perfil real
+    } else {
+      console.warn("Perfil error:", json);
+    }
+  } catch (e) {
+    console.error("Error fetchPerfil:", e);
+  } finally {
+    setLoadingPerfil(false);
+  }
+};
+
 
   return (
     <div className="dashboard-container admin-dashboard">
@@ -288,7 +328,7 @@ function User_Oper() {
               <p>Cargando datos del usuario...</p>
             ) : (
               (() => {
-                const u = perfilDB || {};
+                const u = perfilUsuario || {};
                 const username =
                   u.usuario ||
                   (u.email_usuario
