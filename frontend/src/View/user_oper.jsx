@@ -30,8 +30,17 @@ function User_Oper() {
   const navigate = useNavigate();
   const user = AuthService.getUser();
 
+// ================== Perfil img ===========================
+  const fileInputRef = useRef(null);
+    const userLocal =JSON.parse(localStorage.getItem("user") || "{}");
     const API_ROOT = (process.env.REACT_APP_API_URL || "http://localhost:5000").replace(/\/+$/, "");
-const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
+    const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
+const resolveImg = (p) => {
+    if (!p) return null;
+    if (p.startsWith("http")) return p;
+    return `${API_ROOT}${p.startsWith("/") ? p : `/${p}`}`;
+  };
+
 
 
   const [activeView, setActiveView] = useState('dashboard');
@@ -45,21 +54,68 @@ const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
   // ===================== PERFIL (PLACEHOLDER) =====================
   const [perfilUsuario, setPerfilUsuario] = useState(null);
   const [loadingPerfil, setLoadingPerfil] = useState(false);
+    const [profileImage, setProfileImage] = useState(
+      resolveImg(user?.imagen || user?.imagen_usuario || null)
+    );
   
   const renderSexo = (sexo) => {
     if (sexo === 1 || sexo === '1') return 'Femenino';
     if (sexo === 2 || sexo === '2') return 'Masculino';
     return 'No especificado';
   };
-  
-   const [profileImage, setProfileImage] = useState(
-      user?.imagen || user?.imagen_usuario || null
-    );
-    const handleChangePhoto = () => {
-  alert('Aquí conectas la subida/cambio de foto si luego agregas endpoint');
+
+// ================== Perfil Img =================
+
+const handlePickPhoto = () => {
+  fileInputRef.current?.click();
+};
+
+const handleChangePhoto = async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  try {
+    const u = JSON.parse(localStorage.getItem("user") || "{}");
+    const id = u?.id_usuario;
+
+    if (!id) {
+      alert("No se encontró el id del usuario.");
+      return;
+    }
+
+    const form = new FormData();
+    form.append("avatar", file);
+
+    const res = await fetch(`${API}/users/${id}/avatar`, {
+      method: "PUT",
+      body: form,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data?.success) {
+      alert(data?.message || "No se pudo subir la foto");
+      return;
+    }
+
+    const newPath = data.path;
+    const newUrl = resolveImg(newPath);
+
+    setProfileImage(newUrl);
+
+    const updated = { ...u, imagen_usuario: newPath };
+    localStorage.setItem("user", JSON.stringify(updated));
+
+  } catch (err) {
+    console.error(err);
+    alert("Error al subir foto");
+  } finally {
+    e.target.value = "";
+  }
 };
 
   /* ===================== AUTH ===================== */
+  
   useEffect(() => {
   if (activeView === "perfil") {
     fetchPerfil();
@@ -127,7 +183,7 @@ const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
     const json = await res.json();
 
     if (res.ok && json?.success) {
-      setPerfilUsuario(json.data);  // ✅ este será el perfil real
+      setPerfilUsuario(json.data);  
     } else {
       console.warn("Perfil error:", json);
     }
@@ -151,15 +207,20 @@ const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
                     </div>
           <div className="user-info">
             <span>
-              Bienvenido <strong>{user?.nombre}</strong>
+              Bienvenido <strong>{user?.nombre} {user.apellidoPaterno || user.ap_paterno || ''}</strong>
             </span>
 
             <div className="profile-menu-container" ref={profileMenuRef}>
               <button
+              type="buton"
                 className="header-avatar-button"
                 onClick={() => setMenuOpen(!menuOpen)}
               >
-                <span>{getInitials()}</span>
+                {profileImage ? (
+                  <img src={profileImage} alt="Avatar" className="header-avatar-img" />
+                ) : (
+                  <span className="header-avatar">{getInitials()}</span>
+                )}
               </button>
 
               {menuOpen && (
@@ -311,7 +372,7 @@ const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
           </div>
         )}
 
-                {/* -------- PERFIL -------- */}
+        {/* ============= PERFIL ============= */}
         {activeView === 'perfil' && (
           <div className="perfil-instagram">
             <div className="perfil-header">
@@ -340,34 +401,18 @@ const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
                     <div className="perfil-hero">
                       <div className="perfil-photo-large">
                         {profileImage ? (
-                          <img src={profileImage} alt="Avatar" />
+                          <img src={profileImage} alt="Avatar" className="profile-avatar-img" />
                         ) : (
-                          <span>
-                            {(user.nombre?.[0] || 'U').toUpperCase()}
+                          <span className="profile-avatar-text">
+                            {getInitials()}
                           </span>
                         )}
                       </div>
-
-                      <div className="perfil-main-info">
-                        <div className="perfil-username-row">
-                          <h2 className="perfil-username">{username}</h2>
-                        </div>
-
-                        <span className="perfil-fullname">
-                          {u.nombre_usuario} {u.ap_usuario} {u.am_usuario}
-                        </span>
-
-                        <div className="perfil-buttons-row">
-                          <label className="btn-primary perfil-change-photo">
-                            Cambiar foto
-                            <input
-                              type="file"
-                              accept="image/*"
-                              style={{ display: 'none' }}
-                              onChange={handleChangePhoto}
-                            />
-                          </label>
-                        </div>
+                      <div className="profile-actions">
+                        
+                        <button type="button" className="btn-primary" onClick={handlePickPhoto}>
+                          Cambiar foto
+                        </button>
                       </div>
                     </div>
 

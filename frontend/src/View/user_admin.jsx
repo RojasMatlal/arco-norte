@@ -34,7 +34,14 @@ function User_Admin() {
   const user = AuthService.getUser();
 
   const API_ROOT = (process.env.REACT_APP_API_URL || "http://localhost:5000").replace(/\/+$/, "");
-const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
+  const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
+
+  const resolveImg = (p) => {
+    if (!p) return null;
+    if (p.startsWith("http")) return p;
+    return `${API_ROOT}${p.startsWith("/") ? p : `/${p}`}`;
+  };
+
 
   // ESTADOS 
 
@@ -48,11 +55,12 @@ const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
   const [lugarSeleccionado, setLugarSeleccionado] = useState('');
   const profileMenuRef = useRef(null);
   
-  
+  const fileInputRef = useRef(null);
+  const userLocal =JSON.parse(localStorage.getItem("user") || "{}");
   const [profileImage, setProfileImage] = useState(
-    user?.imagen || user?.imagen_usuario || null
+    resolveImg(user?.imagen || user?.imagen_usuario || null)
   );
-
+const avatarSrc = resolveImg(user?.imagen_usuario);
 // ===================== PERMISOS / USUARIOS (ESTADOS) =====================
 const [permisosTab, setPermisosTab] = useState('registro');
 const [editingUserId, setEditingUserId] = useState(null);
@@ -166,8 +174,7 @@ const refreshCount = async () => {
       setTotalUsuarios(Number(data.total || 0));
     }
   } catch (e) {
-    // no rompas UI
-  }
+}
 };
 
 const refreshUsuarios = async () => {
@@ -266,6 +273,22 @@ const res = await fetch(url, {
 
     alert(editingUserId ? "Usuario actualizado correctamente" : "Usuario registrado correctamente");
 
+if (!editingUserId && formUsuario.imagenFile && data?.id_usuario) {
+  const fd = new FormData();
+  fd.append("avatar", formUsuario.imagenFile);
+
+  const up = await fetch(`${API}/users/${data.id_usuario}/avatar`, {
+    method: "PUT",
+    body: fd,
+  });
+
+  const upJson = await up.json();
+  if (!up.ok || !upJson?.success) {
+    console.warn("No se pudo subir foto en registro:", upJson);
+  }
+}
+
+
     limpiarFormulario();
     setPermisosTab("gestion");
     await refreshUsuarios();
@@ -341,37 +364,59 @@ const handleEliminarUsuario = async (u) => {
 
 
 // ===================== FOTO PERFIL (PLACEHOLDER) =====================
+const handlePickPhoto = () => {
+  fileInputRef.current?.click();
+};
+
 const handleChangePhoto = async (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
 
   try {
-    const form = new FormData();
-    form.append('avatar', file);
+    const u = JSON.parse(localStorage.getItem("user") || "{}");
+    const id = u?.id_usuario;
 
-    const res = await fetch(`${API}/users/${user.id_usuario}/avatar`, {
-      method: 'PUT',
+    if (!id) {
+      alert("No se encontró el id del usuario.");
+      return;
+    }
+
+    const form = new FormData();
+    // IMPORTANT: debe coincidir con tu backend: upload.single("avatar")
+    form.append("avatar", file);
+
+    const res = await fetch(`${API}/users/${id}/avatar`, {
+      method: "PUT",
       body: form,
     });
 
     const data = await res.json();
+
     if (!res.ok || !data?.success) {
-      alert(data?.message || 'No se pudo subir la foto');
+      alert(data?.message || "No se pudo subir la foto");
       return;
     }
 
-    // muestra la foto nueva (URL completa)
-    setProfileImage(`${API}${data.path}`);
+    const newPath = data.path;
+    const newUrl = resolveImg(newPath);
+
+    setProfileImage(newUrl);
+
+    const updated = { ...u, imagen_usuario: newPath };
+    localStorage.setItem("user", JSON.stringify(updated));
+
   } catch (err) {
     console.error(err);
-    alert('Error al subir foto');
+    alert("Error al subir foto");
   } finally {
-    e.target.value = '';
+    e.target.value = "";
   }
 };
 
+
+
   
-  //contador en tiempo real
+  //=============== CONTADOR EN TIEMPO REAL ====================
 useEffect(() => {
   let alive = true;
 
@@ -404,10 +449,15 @@ useEffect(() => {
 
 
 
-   // recargar imagen si cambia el user guardado
+   // ================= recargar imagen si cambia el user guardado =================
   useEffect(() => {
+  const u = JSON.parse(localStorage.getItem("user") || "{}");
+  setProfileImage(resolveImg(u?.imagen_usuario));
+}, []);
+  
+   useEffect(() => {
     const u =AuthService.getUser();
-  setProfileImage(u?.imagen || u?.imagen_usuario || null);
+  setProfileImage(resolveImg(u?.imagen || u?.imagen_usuario || null));
 }, []);
 
 useEffect(() => {
@@ -485,9 +535,9 @@ useEffect(() => {
                 onClick={() => setMenuOpen(!menuOpen)}
               >
                 {profileImage ? (
-                  <img src={profileImage} alt="Avatar" />
+                  <img src={profileImage} alt="Avatar" className="header-avatar-img" />
                 ) : (
-                  <span>{getInitials()}</span>
+                  <span className="header-avatar">{getInitials()}</span>
                 )}
               </button>
 
@@ -720,7 +770,7 @@ useEffect(() => {
                   </div>
 
                   <div className="form-row">
-                    <label>Apellido materno</label>
+                    <label>Apellido materno *</label>
                     <input
                       type="text"
                       name="apellidoMaterno"
@@ -792,8 +842,7 @@ useEffect(() => {
                        name="password"
                        value={formUsuario.password}
                        onChange={handleFormChange}
-                       placeholder="Contraseña"
-                        />
+                      />
                           <img src={showPassword ? eyeOff :eyeOn} 
                           className="password-eye"
                           onClick={() => setShowPassword(!showPassword)}
@@ -864,7 +913,7 @@ useEffect(() => {
                           <td className="col-nombre">
                             {u.nombre_usuario} {u.ap_usuario} {u.am_usuario}
                           </td>
-                          <td> {u.sexo_usuario === 1 ? "Masculino" : u.sexo_usuario === 2 ? "Femenino" : "No especificado"}</td>
+                          <td> {u.sexo_usuario === 2 ? "Masculino" : u.sexo_usuario === 1 ? "Femenino" : "No especificado"}</td>
                           <td>{u.email_usuario}</td>
                           <td>{u.area_usuario}</td>
                           <td>{u.nombre_rol}</td>
@@ -951,34 +1000,18 @@ useEffect(() => {
                     <div className="perfil-hero">
                       <div className="perfil-photo-large">
                         {profileImage ? (
-                          <img src={profileImage} alt="Avatar" />
+                          <img src={profileImage} alt="Avatar" className="profile-avatar-img" />
                         ) : (
-                          <span>
-                            {(user.nombre?.[0] || 'U').toUpperCase()}
+                          <span className="profile-avatar-text">
+                            {getInitials()}
                           </span>
                         )}
                       </div>
-
-                      <div className="perfil-main-info">
-                        <div className="perfil-username-row">
-                          <h2 className="perfil-username">{username}</h2>
-                        </div>
-
-                        <span className="perfil-fullname">
-                          {u.nombre_usuario} {u.ap_usuario} {u.am_usuario}
-                        </span>
-
-                        <div className="perfil-buttons-row">
-                          <label className="btn-primary perfil-change-photo">
-                            Cambiar foto
-                            <input
-                              type="file"
-                              accept="image/*"
-                              style={{ display: 'none' }}
-                              onChange={handleChangePhoto}
-                            />
-                          </label>
-                        </div>
+                      <div className="profile-actions">
+                        
+                        <button type="button" className="btn-primary" onClick={handlePickPhoto}>
+                          Cambiar foto
+                        </button>
                       </div>
                     </div>
 

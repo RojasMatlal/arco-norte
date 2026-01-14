@@ -147,7 +147,7 @@ router.put('/:id', async (req, res) => {
       password, 
     } = req.body;
 
-    if (!nombre || !apellidoPaterno || !area || !id_rol || !email) {
+    if (!nombre || !apellidoPaterno || !apellidoMaterno || !area || !id_rol || !email) {
       return res.status(400).json({
         success: false,
         message: 'Faltan campos obligatorios',
@@ -305,7 +305,6 @@ router.delete('/:id', async (req, res) => {
 });
 
 // GET para traer el perfil por ID
-// GET /api/users/:idI
 router.get('/:id', async (req, res) => {
   try {
     const id = Number(req.params.id);

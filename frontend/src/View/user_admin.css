@@ -279,9 +279,7 @@
     transform: rotate(360deg);
   }
 }
-/* ===========================
-   PERMISOS VIEW (card + tabs)
-   =========================== */
+
 
 .permisos-view{
   max-width: 1180px;
@@ -292,7 +290,7 @@
   box-shadow: 0 12px 35px rgba(15, 23, 42, 0.10);
 }
 
-/* Header: título + volver */
+
 .permisos-header{
   display: flex;
   justify-content: space-between;
@@ -338,9 +336,7 @@
   border-color: transparent;
 }
 
-/* ===========================
-   BOTONES (reutilizables)
-   =========================== */
+
 
 .btn-primary{
   background: #5b5fe6;
@@ -381,7 +377,7 @@
   box-shadow: 0 10px 18px rgba(15, 23, 42, 0.10);
 }
 
-/* Botones pequeños de la tabla */
+
 .btn-small{
   background: #eef0f5;
   color: #0f172a;
@@ -411,9 +407,7 @@
   background: #ffdede;
 }
 
-/* ===========================
-   REGISTRO (form mejorado)
-   =========================== */
+
 
 .registro-usuario-form{
   border: 1px solid rgba(15, 23, 42, 0.08);
@@ -429,14 +423,14 @@
   color: #0f172a;
 }
 
-/* grid 2 columnas (tu JSX usa form-grid-2) */
+
 .form-grid-2{
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px 16px;
 }
 
-/* fila normal */
+
 .form-row{
   display: flex;
   flex-direction: column;
@@ -468,12 +462,12 @@
   box-shadow: 0 0 0 4px rgba(91, 95, 230, 0.15);
 }
 
-/* fila completa (tu JSX usa form-row-full) */
+
 .form-row-full{
   grid-column: 1 / -1;
 }
 
-/* Botón subir foto reutiliza btn-primary + perfil-change-photo */
+
 .perfil-change-photo{
   display: inline-flex;
   align-items: center;
@@ -564,31 +558,28 @@
   background: #fafbff;
 }
 
-/* Para que el colSpan se vea centrado cuando no hay datos */
+
 .usuarios-tabla tbody td[colspan]{
   text-align: center;
   color: rgba(15, 23, 42, 0.70);
   padding: 18px 12px;
 }
 
-/* Acciones en tabla más ordenadas */
+
 .usuarios-tabla td:last-child{
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   align-items: center;
 }
-/* =========================
-   SPIKE-STYLE ADMIN UI
-   (solo CSS, sin tocar lógica)
-========================= */
+
 
 .admin-dashboard {
   background: #f3f6fb;
   min-height: 100vh;
 }
 
-/* Layout base: sidebar + content */
+
 .admin-shell {
   display: grid;
   grid-template-columns: 260px 1fr;
@@ -728,7 +719,7 @@
   object-fit: cover;
 }
 
-/* Main container padding */
+
 .admin-main {
   padding: 22px;
 }
@@ -822,7 +813,7 @@
 
 /* ===== Permisos / Registro view ===== */
 .permisos-card {
-  max-width: 1500px;   /* antes seguro estaba 1100–1200 */
+  max-width: 1500px;
   width: 100%;
 }
 
@@ -1145,4 +1136,52 @@
   text-overflow: ellipsis;
   max-width: 260px; /* ajusta a gusto */
 }
+
+/* HEADER AVATAR (bienvenido) */
+.header-avatar-button{
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #5b5df4;
+  background: #0f172a;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 0;
+}
+
+.header-avatar-img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.header-avatar-text{
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.profile-avatar {
+  width: 140px;       
+  height: 140px;
+  border-radius: 50%;
+  overflow: hidden;   
+  border: 3px solid #5b5df4;
+  background: #0f172a;
+  display: grid;
+  place-items: center;
+}
+
+.profile-avatar img,
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;      
+  object-position: center;
+  display: block;
+}
+
+
 
