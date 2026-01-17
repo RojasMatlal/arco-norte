@@ -22,7 +22,7 @@ CREATE TABLE usuarios (
 	nombre_usuario VARCHAR(30) NOT NULL,
 	ap_usuario VARCHAR(30) NOT NULL,
 	am_usuario VARCHAR(30) NULL DEFAULT NULL,
-	sexo_usuario TINYINT(1) NOT NULL COMMENT '0: Femenino, 1: Masculino',
+	sexo_usuario TINYINT(1) NOT NULL COMMENT '1: Femenino, 2: Masculino',
 	email_usuario VARCHAR(50) NOT NULL,
 	password_usuario VARCHAR(64) NOT NULL,
 	imagen_usuario VARCHAR(100) NULL DEFAULT NULL COMMENT 'profile.png',
@@ -33,5 +33,5 @@ CREATE TABLE usuarios (
 
 
 INSERT INTO usuarios (id_usuario, nombre_usuario, ap_usuario, sexo_usuario, email_usuario, password_usuario, id_rol, area_usuario) VALUES
-	(NULL, 'Evelin', 'Rojas', 0, 'evelin@gmail.com', SHA2('evelin123',256), 745, 'Administracion'),
-	(NULL, 'Alejandro', 'Sainz', 1, 'ale@gmail.com', SHA2('ale123',256), 125, 'Operaciones');
+	(NULL, 'Evelin', 'Rojas', 1, 'evelin@gmail.com', SHA2('evelin123',256), 745, 'Administracion'),
+	(NULL, 'Alejandro', 'Sainz', 2, 'ale@gmail.com', SHA2('ale123',256), 125, 'Operaciones');

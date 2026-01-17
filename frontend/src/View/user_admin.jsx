@@ -32,6 +32,11 @@ const LUGARES_TLAXCALA = [
 function User_Admin() {
   const navigate = useNavigate();
   const user = AuthService.getUser();
+  const registerFileRef = useRef(null);
+  const handlePickRegisterPhoto = () => {
+  registerFileRef.current?.click();
+};
+
 
   const API_ROOT = (process.env.REACT_APP_API_URL || "http://localhost:5000").replace(/\/+$/, "");
   const API = API_ROOT.endsWith("/api") ? API_ROOT : `${API_ROOT}/api`;
@@ -366,6 +371,13 @@ const handleEliminarUsuario = async (u) => {
 // ===================== FOTO PERFIL (PLACEHOLDER) =====================
 const handlePickPhoto = () => {
   fileInputRef.current?.click();
+};
+
+const handleRegisterPhoto = (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  setFormUsuario((prev) => ({ ...prev, imagenFile: file }));
+  e.target.value = "";
 };
 
 const handleChangePhoto = async (e) => {
@@ -854,15 +866,18 @@ useEffect(() => {
                   {/* FOTO OPCIONAL */}
                   <div className="form-row form-row-full">
                     <label>Foto</label>
-                    <label className="btn-primary perfil-change-photo">
-                      Seleccionar foto
-                      <input
-                        type="file"
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                        onChange={handleAvatarFile}
-                      />
-                    </label>
+                    <input
+                     ref={registerFileRef}
+                     type="file"
+                     accept="image/*"
+                     style={{ display: "none" }}
+                     onChange={handleRegisterPhoto}
+                     />
+
+                       <button type="button" className="btn-secondary" onClick={handlePickRegisterPhoto}>
+                        Seleccionar foto
+                       </button>
+
                     {formUsuario.imagenFile && (
                       <p style={{ marginTop: 8, fontSize: '0.9rem' }}>
                         📁 Archivo seleccionado:{' '}
@@ -886,7 +901,7 @@ useEffect(() => {
                     </button>
                   )}
                 </div>
-              </form>
+              </form> 
             )}
 
             {permisosTab === 'gestion' && (
@@ -1002,13 +1017,19 @@ useEffect(() => {
                         {profileImage ? (
                           <img src={profileImage} alt="Avatar" className="profile-avatar-img" />
                         ) : (
+
                           <span className="profile-avatar-text">
                             {getInitials()}
                           </span>
                         )}
                       </div>
                       <div className="profile-actions">
-                        
+                      <input 
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none"}}
+                      onChange={handleChangePhoto}/>
                         <button type="button" className="btn-primary" onClick={handlePickPhoto}>
                           Cambiar foto
                         </button>

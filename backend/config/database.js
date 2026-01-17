@@ -1,5 +1,6 @@
 require('dotenv').config();
 const mysql = require('mysql2/promise');
+const sql = require('mssql');
 
 // Guardar la configuración para poder acceder después
 const dbConfig = {
